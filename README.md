@@ -11,8 +11,9 @@
 **Figma**: https://www.figma.com/design/ZJVprHQTGhKUmJ3C0ZtDBY/MAP-Project-2024-2025?node-id=0-1&t=1GOkMB7wLpAnd8l6-1
 
 **Tech Stack** 
-React Native
-TypeScript
+Flask
+HTML
+CSS
 
 ## User Guide
 TBD
