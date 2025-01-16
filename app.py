@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
@@ -11,6 +12,7 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+migrate = Migrate(app, db)
 
 # User model
 class User(db.Model, UserMixin):
@@ -18,6 +20,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(150), nullable=False, unique=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
+    budget = db.Column(db.String(150), nullable = True)
+    dietary = db.Column(db.Text, nullable=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -74,10 +78,27 @@ def login():
 
     return render_template('login.html')
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html', username=current_user.username)
+    if request.method == 'POST':
+        # Get updated data from the form
+        username = request.form['username']
+        budget = request.form['budget']
+        dietary = request.form['dietary']
+        
+        # Update the user data in the database
+        current_user.username = username
+        current_user.budget = budget  # Update the budget
+        current_user.dietary = dietary  # Update dietary preferences
+        
+        db.session.commit()  # Commit the changes to the database
+        
+        # Flash a success message and reload the page
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('dashboard'))  # This soft reloads the page with new data
+
+    return render_template('dashboard.html', username=current_user.username, email=current_user.email, budget=current_user.budget, dietary=current_user.dietary)
 
 @app.route('/logout')
 @login_required
