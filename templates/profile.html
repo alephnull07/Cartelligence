@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Cartelligence</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #495057;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        .grocery-list-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .grocery-list-card .card-body {
+            display: none;
+        }
+        .grocery-list-card.expanded .card-body {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center">Cartelligence</h3>
+        <a href="/dashboard">Home</a>
+        <a href="/shopping">Shopping</a>
+        <a href="/profile" class="active">Profile</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Profile Section -->
+        <div id="profile-section" class="section">
+            <h1>Profile</h1>
+            <form method="POST">
+                <!-- Username field -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly>
+                </div>
+        
+                <!-- Email field (should never be editable) -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ email }}" readonly>
+                </div>
+        
+                <!-- Budget field (editable only after clicking Edit) -->
+                <div class="mb-3">
+                    <label for="budget" class="form-label">Budget Constraints</label>
+                    <input type="text" class="form-control" id="budget" name="budget" value="{{ budget }}" readonly>
+                </div>
+        
+                <!-- Dietary field (editable only after clicking Edit) -->
+                <div class="mb-3">
+                    <label for="dietary" class="form-label">Dietary Preferences</label>
+                    <textarea class="form-control" id="dietary" name="dietary" readonly>{{ dietary }}</textarea>
+                </div>
+        
+                <!-- Edit and Save buttons -->
+                <button type="button" class="btn btn-warning" id="edit-btn" onclick="toggleEditMode()">Edit</button>
+                <button type="submit" class="btn btn-primary" id="save-btn" style="display: none;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleEditMode() {
+            const fields = document.querySelectorAll('#budget, #dietary');
+            const saveBtn = document.getElementById('save-btn');
+            const editBtn = document.getElementById('edit-btn');
+
+            fields.forEach(field => {
+                field.readOnly = !field.readOnly;
+            });
+
+            saveBtn.style.display = saveBtn.style.display === 'none' ? 'inline-block' : 'none';
+            editBtn.style.display = editBtn.style.display === 'none' ? 'inline-block' : 'none';
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
