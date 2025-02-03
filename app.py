@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 model = genai.GenerativeModel('gemini-pro')
-genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
+genai.configure(api_key="key")
 
 
 
