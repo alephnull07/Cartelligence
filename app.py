@@ -4,10 +4,14 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 import google.generativeai as genai
+import time 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+model = genai.GenerativeModel('gemini-pro')
+genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
+
 
 
 db = SQLAlchemy(app)
@@ -110,6 +114,39 @@ def login():
 @login_required
 def dashboard():
     grocery_lists = GroceryList.query.filter_by(user_id=current_user.id).all()
+    generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 0,
+        "max_output_tokens": 8192,
+        }
+
+    safety_settings = [
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        ]
+
+
+    model = genai.GenerativeModel(model_name="gemini-pro",
+                                    generation_config=generation_config,
+                                    safety_settings=safety_settings)
+
+    convo = model.start_chat(history=[])
+
     return render_template('dashboard.html', 
                            username=current_user.username, 
                            grocery_lists=grocery_lists)
@@ -157,7 +194,7 @@ def profile():
         current_user.budget = budget
         current_user.dietary = dietary
         db.session.commit()  # Commit the changes to the database
-
+        
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))  # Reload the page to show the updated info
 
