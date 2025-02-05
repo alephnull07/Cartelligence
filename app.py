@@ -245,6 +245,14 @@ def delete_list(list_id):
         flash('List not found or you do not have permission to delete it.', 'danger')
         return redirect(url_for('dashboard'))
 
+@app.route('/most_popular_item', methods=['GET'])
+@login_required
+def most_popular_item():
+    from gemini_api import get_most_popular_item
+    """Returns the most popular grocery item across all lists."""
+    popular_item = get_most_popular_item()
+    return jsonify({"most_popular_item": popular_item})
+
 @app.route('/logout')
 @login_required
 def logout():

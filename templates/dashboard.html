@@ -19,6 +19,29 @@
     </div>
     <!-- Main Content -->
     <div class="content">
+        <!-- Flash Messages -->
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+              <!-- Flash Messages as Toasts -->
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                      <div class="toast-header">
+                        <strong class="me-auto">Notification</strong>
+                        <small>Just now</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                      </div>
+                      <div class="toast-body">
+                        {{ message }}
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+
         <div id="home-section" class="section">
 
             <!-- Button to trigger the modal -->
@@ -96,8 +119,23 @@
     </div>
     
     <script>
-        let itemRows = [];
+        // Initialize all toasts when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true, // Automatically hide the toast
+                delay: 3000     // Delay in milliseconds (5 seconds)
+            });
+            });
 
+            // Show all toasts
+            toastList.forEach(function (toast) {
+            toast.show();
+            });
+        });
+
+        let itemRows = [];
         // Add item functionality
         function addItem(button) {
             const itemRowsContainer = document.getElementById('itemRows');
@@ -241,7 +279,7 @@
 
                         groceryLists.appendChild(newCard);
 
-                        // Reset form and modal
+                        // Reset form and itemRows
                         document.getElementById('listForm').reset();
                         document.getElementById('itemRows').innerHTML = `
                             <div class="item-row">
@@ -264,8 +302,14 @@
                         `;
 
                         itemRows = [];
-                        const modal = new bootstrap.Modal(document.getElementById('listModal'));
-                        modal.hide();
+
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('listModal'));
+                        if (modal) {
+                            modal.hide();
+                        } else {
+                            console.error('Modal instance not found.');
+                        }
                     } else {
                         const errorMsg = await response.json();
                         alert(`Error: ${errorMsg.message}`);
@@ -274,6 +318,8 @@
                     console.error('Error saving list:', error);
                     alert('Failed to save the list. Please try again.');
                 }
+            } else {
+                alert('Please provide a list name and at least one item.');
             }
         }
 
