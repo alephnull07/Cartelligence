@@ -212,23 +212,26 @@ def create_list():
     if not items or len(items) == 0:
         return jsonify({'error': 'At least one item is required'}), 400
 
-    # Create a new grocery list
+    # Create and commit the new grocery list first
     new_list = GroceryList(name=name, user_id=current_user.id)
     db.session.add(new_list)
-    db.session.commit()
+    db.session.commit()  # Generates ID for foreign key relationships
 
-    # Create GroceryItems for each item in the list
+    # Add items
+    grocery_items = []
     for item in items:
         new_item = GroceryItem(name=item.strip(), list_id=new_list.id)
         db.session.add(new_item)
+        grocery_items.append(new_item.name)  # Store item names for response
 
     db.session.commit()
 
     return jsonify({
         'id': new_list.id,
         'name': new_list.name,
-        'items': [item.name for item in new_list.items]
-    })
+        'items': [item.name for item in new_list.items]  # Now correctly updated
+    }), 201
+
 
 @app.route('/delete_list/<int:list_id>', methods=['POST'])
 @login_required
