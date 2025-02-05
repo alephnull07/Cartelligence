@@ -14,33 +14,42 @@
     </nav>
 
     <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+          <!-- Flash Messages as Toasts -->
+          {% with messages = get_flashed_messages() %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+              {% for message in messages %}
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                  <div class="toast-header">
+                    <strong class="me-auto">Notification</strong>
+                    <small>Just now</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+                  <div class="toast-body">
+                    {{ message }}
+                  </div>
+                </div>
+              {% endfor %}
             {% endif %}
-        {% endwith %}
+          {% endwith %}
+        </div>
     </div>
     
-    <!-- JavaScript to Auto-Dismiss Alerts -->
     <script>
-        // Wait for the DOM to load
-        document.addEventListener("DOMContentLoaded", function() {
-            // Get all alert elements
-            const alerts = document.querySelectorAll('.alert');
-            // Set timeout for each alert
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    // Remove the 'show' class to hide the alert
-                    alert.classList.remove('show');
-                    alert.classList.add('fade');
-                    setTimeout(() => alert.remove(), 500); // Remove the element after fading out
-                }, 3000); // 3000ms = 3 seconds
+        // Initialize all toasts when the page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true, // Automatically hide the toast
+                delay: 3000     // Delay in milliseconds (5 seconds)
+            });
+            });
+
+            // Show all toasts
+            toastList.forEach(function (toast) {
+            toast.show();
             });
         });
     </script>
