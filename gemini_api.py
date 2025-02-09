@@ -3,7 +3,7 @@ from collections import Counter
 import google.generativeai as genai
 
 # 🔴 Hardcode API key for now (replace with dotenv later)
-genai.configure(api_key="your-api-key-here")
+genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
 
 def get_user_items(user_id):
     """Fetch all grocery items from a specific user's grocery lists."""
@@ -35,3 +35,44 @@ def get_most_popular_item_for_user(user_id):
     response = model.generate_content(prompt)
     
     return response.text.strip()  # Clean output
+
+def generateList(diet, budget):
+    prompt = (
+    "Generate a grocery list of **only specific ingredients** based on the following dietary restrictions: "
+    f"{diet} and budget constraints: {budget}. "
+    "Avoid umbrella terms like 'bean (black, pinto, canned)' or 'frozen fruit'. Instead, list individual items like 'black beans' or 'strawberries'. "
+    "Format the response strictly as a **Python string**, with no additional text or headings. Separate each entry with commas."
+    "Example: ['apples', 'bananas', 'broccoli']"
+    )
+
+    model = genai.GenerativeModel("gemini-pro")
+    convo = model.start_chat(history=[])
+    response = convo.send_message(prompt)
+
+    return convo.last.text
+
+def generateAlternative(ingredient):
+    prompt = (
+    "Please concisely find a single substitute for this ingredient: " + ingredient + "."
+    "Avoid umbrella terms like 'alternative milk (oat, almond, soy)'. Instead, list an individual item like 'oat milk'."
+    )
+
+    model = genai.GenerativeModel("gemini-pro")
+    convo = model.start_chat(history=[])
+    response = convo.send_message(prompt)
+
+    return convo.last.text
+
+def generateNutrition(ingredient):
+
+    prompt = (
+        "Please concisely list the number of calories, carbohydrates, and added sugars (if any) and the amount of protein and sodium in this grocery item: " + f"{ingredient}"
+        "Format the response strictly as a **Python string**, with no additional text or headings. Separate each entry with commas."
+        "Example: ['100 calories', '20g carbohydrates', '5g added sugars', '10g protein', '200mg sodium']"
+    )
+
+    model = genai.GenerativeModel("gemini-pro")
+    convo = model.start_chat(history=[])
+    response = convo.send_message(prompt)
+
+    return convo.last.text
