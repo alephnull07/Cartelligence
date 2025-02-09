@@ -142,6 +142,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- AI Generate button -->
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" onclick="generateAIList()">
+            AI Generate
+        </button>
+
+        <!-- Temporary output place -->
+        <p id="ai-output"></p>
+
+        
     </div>
     
     <script>
@@ -350,6 +360,16 @@
             } else {
                 cardBody.style.display = 'none';
             }
+        }
+
+
+        function generateAIList() {
+            fetch('/generate_ai_list', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    // Display or use the generated AI list (from the response)
+                    document.getElementById("ai-output").innerHTML = data;
+                });
         }
     </script>
 
