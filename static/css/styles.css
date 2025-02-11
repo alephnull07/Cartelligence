@@ -65,7 +65,10 @@
 .main-content {
     margin-left: 220px; /* Adjust to match the sidebar width */
     padding: 20px;
-    margin-top: 80px; /* Add margin to account for the top bar height */
+}
+
+body.has-topbar .main-content {
+    margin-top: 80px;
 }
 
 .section {
