@@ -262,7 +262,8 @@ def generate_ai_list():
     from gemini_api import generateList
     
     ai_response = generateList(current_user.dietary, current_user.budget)
-    # print(ai_response)
+    
+    
 
     return jsonify(ai_response)
 
