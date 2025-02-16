@@ -5,12 +5,45 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_migrate import Migrate
 import google.generativeai as genai
 import time 
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 model = genai.GenerativeModel('gemini-pro')
 genai.configure(api_key="key")
+generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 0,
+        "max_output_tokens": 8192,
+        }
+
+safety_settings = [
+    {
+        "category": "HARM_CATEGORY_HARASSMENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    {
+        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+    },
+    ]
+
+
+model = genai.GenerativeModel(model_name="gemini-pro",
+                                generation_config=generation_config,
+                                safety_settings=safety_settings)
+
+convo = model.start_chat(history=[])
 
 
 
@@ -114,39 +147,7 @@ def login():
 @login_required
 def dashboard():
     grocery_lists = GroceryList.query.filter_by(user_id=current_user.id).all()
-    generation_config = {
-        "temperature": 1,
-        "top_p": 0.95,
-        "top_k": 0,
-        "max_output_tokens": 8192,
-        }
-
-    safety_settings = [
-        {
-            "category": "HARM_CATEGORY_HARASSMENT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_HATE_SPEECH",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        ]
-
-
-    model = genai.GenerativeModel(model_name="gemini-pro",
-                                    generation_config=generation_config,
-                                    safety_settings=safety_settings)
-
-    convo = model.start_chat(history=[])
-
+    
     return render_template('dashboard.html', 
                            username=current_user.username, 
                            grocery_lists=grocery_lists)
@@ -261,11 +262,10 @@ def most_popular_item():
 def generate_ai_list():
     from gemini_api import generateList
     
-    ai_response = generateList(current_user.dietary, current_user.budget)
-    
-    
-
-    return jsonify(ai_response)
+    ai_response = convo.send_message("Please make a numbered list of five foods that fit the dietary restrictions of " + current_user.dietary + " and the budget of " + current_user.budget)
+    foods = [x for x in (convo.last.text).split("\n") if x != ""]
+    print(foods)
+    return render_template('dashboard.html',  Gemini = foods)
 
 @app.route('/submit_alternative', methods=['POST'])
 @login_required
@@ -275,7 +275,7 @@ def submit_alternative():
     data = request.json
     ingredient = data.get('alternative')
     ai_response = generateAlternative(ingredient)
-    # print(ai_response)
+    print(ai_response)
 
     return jsonify(ai_response)
 
