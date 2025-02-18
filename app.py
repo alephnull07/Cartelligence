@@ -262,10 +262,12 @@ def most_popular_item():
 def generate_ai_list():
     from gemini_api import generateList
     
-    ai_response = convo.send_message("Please make a numbered list of five foods that fit the dietary restrictions of " + current_user.dietary + " and the budget of " + current_user.budget)
-    foods = [x for x in (convo.last.text).split("\n") if x != ""]
+    ai_response = generateList(current_user.dietary, current_user.budget)
+    foods = ai_response.split(",")
     print(foods)
-    return render_template('dashboard.html',  Gemini = foods)
+    
+    
+    return jsonify(foods)
 
 @app.route('/submit_alternative', methods=['POST'])
 @login_required

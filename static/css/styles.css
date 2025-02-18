@@ -1,7 +1,7 @@
 /* Sidebar Styles */
 .sidebar {
-    background-color: #2e7d32; /* Dark green */
-    color: #fff;
+    background-color: #45523e; /* Dark green */
+    color: #f5ece5;
     padding: 15px;
     height: 100vh;
     width: 220px; /* Set the sidebar width */
@@ -20,7 +20,7 @@
 }
 
 .sidebar a {
-    color: #fff;
+    color: #fdfffa; /* Light grey */
     display: block;
     padding: 10px 15px;
     text-decoration: none;
@@ -30,27 +30,27 @@
 }
 
 .sidebar a:hover, .sidebar a.active {
-    background-color: #388e3c; /* Medium green */
+    background-color: #6d8b65; /* Medium green */
     border-radius: 5px;
     transform: scale(1.05);
 }
 
 .sidebar a.logout {
-    background-color: #d32f2f; /* Red */
-    color: #fff;
+    background-color: #c47a6d; /* Red */
+    color: #fdfffa;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.3s;
 }
 
 .sidebar a.logout:hover {
-    background-color: #c62828; /* Darker red */
+    background-color: #a75a4f; /* Darker red */
     transform: scale(1.05);
 }
 
 /* Top Bar Styles */
 .topbar {
-    background-color: #0a5e11; /* Dark green */
-    color: #fff;
+    background-color: #45523e; /* Dark green */
+    color: #fdfffa;
     padding: 20px 30px;
     text-align: left;
     position: fixed;
@@ -82,12 +82,12 @@ body.has-topbar .main-content {
     border: 1px solid #c8e6c9; /* Light green */
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+    background-color: #f5ece5;
 }
 
 .card-header {
     background-color: #66bb6a; /* Light green */
-    color: #fff;
+    color: #fdfffa;
     padding: 10px;
     border-bottom: 1px solid #c8e6c9; /* Light green */
     border-top-left-radius: 5px;
@@ -132,9 +132,9 @@ body.has-topbar .main-content {
 .add-food-list-btn {
     position: fixed;
     right: 80px;
-    background-color: #4caf50; /* Green */
-    border-color: #4caf50;
-    color: #fff;
+    background-color: #6d8b65; /* Green */
+    border-color: #587d44;
+    color: #fdfffa;
     font-family: 'Roboto', sans-serif;
     padding: 15px 30px;
     font-size: 1.2rem;
@@ -144,17 +144,77 @@ body.has-topbar .main-content {
 }
 
 .add-food-list-btn:hover {
-    background-color: #388e3c; /* Darker green */
+    background-color: #45523e; /* Darker green */
+    color: #fdfffa;
     transform: scale(1.05);
 }
+
+.ai-generate-btn{
+    background-color: #6d8b65; /* Green */
+    border-color: #587d44;
+    color: #fdfffa;
+    font-family: 'Roboto', sans-serif;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.ai-generate-btn:hover {
+    background-color: #45523e; /* Darker green */
+    color: #fdfffa;
+    transform: scale(1.05);
+}
+
+#ai-output {
+    color: #4e4136;
+}
+
+.nutrition-btn{
+    background-color: #6d8b65; /* Green */
+    border-color: #587d44;
+    color: #fdfffa;
+    font-family: 'Roboto', sans-serif;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.nutrition-btn:hover {
+    background-color: #45523e; /* Darker green */
+    color: #fdfffa;
+    transform: scale(1.05);
+}
+
+.alternative-btn{
+    background-color: #6d8b65; /* Green */
+    border-color: #587d44;
+    color: #fdfffa;
+    font-family: 'Roboto', sans-serif;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.alternative-btn:hover {
+    background-color: #45523e; /* Darker green */
+    color: #fdfffa;
+    transform: scale(1.05);
+}
+
 .btn-success {
-    background-color: #4caf50; /* Green */
-    border-color: #4caf50;
+    background-color: #769e60; /* Green */
+    border-color: #587d44;
 }
 
 .btn-danger {
-    background-color: #f44336; /* Red */
-    border-color: #f44336;
+    background-color: #c47a6d; /* Red */
+    border-color: #a75a4f;
 }
 
 .btn-primary {
@@ -180,14 +240,11 @@ body.has-topbar .main-content {
     color: #000;
     opacity: 0.75;
 }
-.ai-generate-btn{
-    background-color: #4caf50; /* Green */
-    border-color: #4caf50;
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s, transform 0.3s;
+
+.form-control {
+    background-color: #f6f6f6; /* Light grey */   
+}
+
+#edit-btn {
+    background-color: #c47a6d; /* Red */
 }

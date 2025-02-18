@@ -39,9 +39,9 @@
     </style>
 
 </head>
-<body style="font-family: 'Roboto', sans-serif;">
+<body style="background-color: #f5ece5; font-family: 'Roboto', sans-serif;">
     <div class="topbar">
-        <h2 style="margin: 0;">Welcome, <span style="font-family: 'Arial', sans-serif; color: rgb(182, 255, 174);">{{ username }}</span>!</h2>
+        <h2 style="margin: 0;">Welcome, <span style="font-family: 'Arial', sans-serif; color: #a8c7a0;">{{ username }}</span>!</h2>
     </div>
     <!-- Main Content -->
     <div class="content">
@@ -71,7 +71,7 @@
         <div id="home-section" class="section">
 
             <!-- Button to trigger the modal -->
-            <button type="button" class="btn btn-success add-food-list-btn" data-bs-toggle="modal" data-bs-target="#listModal">
+            <button type="button" class="btn add-food-list-btn" data-bs-toggle="modal" data-bs-target="#listModal">
                 Add a New Food List
             </button>
 
@@ -145,22 +145,17 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-success ai-generate-btn" onclick="generateAIList()">
+        <button type="button" class="btn ai-generate-btn" onclick="generateAIList()">
             AI Generate Ingredients!
         </button>
-        {% for z in Gemini %}
-            <p>{{ z }}</p>
-        {% endfor %}
-        
-
-
-
-
-       
-
         
     </div>
-    
+
+    <div>
+        <p id="ai-output">
+            hi
+        </p>
+    </div>
     <script>
         // Initialize all toasts when the page loads
         document.addEventListener('DOMContentLoaded', function () {
@@ -374,9 +369,13 @@
             fetch('/generate_ai_list', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => {
-                    // Display or use the generated AI list (from the response)
-                    document.getElementById("ai-output").innerHTML = data;
+                let output = "<ul>";
+                data.forEach(item => {
+                    output += `<li>${item}</li>`;  // Format each item as a bullet point
                 });
+                output += "</ul>";
+                document.getElementById('ai-output').innerHTML = output;
+            })
         }
     </script>
 
