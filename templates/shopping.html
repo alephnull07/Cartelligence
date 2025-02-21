@@ -21,43 +21,26 @@
             <p class="lead">Plan your shopping here.</p>
         </div>
 
-        <!-- Alternative Generation -->
-
-        <!-- Button to trigger modal -->
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#alternativeModal">
-            Find an Alternative?
-        </button>
-
-        <!-- Temporary output place -->
-        <p id="ai-alternative"></p>
-
-        <!-- Nutrition insights button -->
+        <!-- Button to trigger nutritional info modal -->
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nutritionModal">
             See nutritional insights?
         </button>
+        <!-- Section to display fetched nutritional info -->
+        <div id="alternatives-section" class="mt-4">
+            <h3>Nutritional Info</h3>
+            <p id="ai-nutrition"></p>
+        </div>
+        <br>
+        <br>
 
-        <!-- Temporary output place -->
-        <p id="ai-nutrition"></p>
-
-    </div>
-
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="alternativeModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Find an Alternative</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="alternativeInput" class="form-label">Enter your ingredient:</label>
-                    <input type="text" class="form-control" id="alternativeInput" placeholder="e.g., dairy milk">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="submitAlternative">Submit</button>
-                </div>
-            </div>
+        <!-- Button to trigger find alternatives modal -->
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#alternativeModal">
+            Find an Alternative
+        </button>
+        <!-- Section to display AI-generated alternatives -->
+        <div id="alternatives-section" class="mt-4">
+            <h3>AI-Generated Alternatives</h3>
+            <p id="ai-alternative"></p>
         </div>
     </div>
 
@@ -80,33 +63,30 @@
         </div>
     </div>
 
-    
+    <!-- Bootstrap Modal for Finding Alternatives -->
+    <div class="modal fade" id="alternativeModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Find an Alternative</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="alternativeInput" class="form-label">Enter your ingredient:</label>
+                    <input type="text" class="form-control" id="alternativeInput" placeholder="e.g., dairy milk">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitAlternative">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        document.getElementById("submitAlternative").addEventListener("click", function() {
-            let userInput = document.getElementById("alternativeInput").value.trim();
-            
-            if (userInput !== "") {
-                fetch('/submit_alternative', {
-                    method: 'POST',
-                    body: JSON.stringify({ alternative: userInput }),
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("ai-alternative").innerHTML = data; // Display AI response
-                    
-
-                })
-                .catch(error => console.error("Error:", error));
-            } else {
-                alert("Please enter a valid input.");
-            }
-        });
-
         document.getElementById("submitNutrition").addEventListener("click", function() {
             let userInput = document.getElementById("nutritionInput").value.trim();
-            
+
             if (userInput !== "") {
                 fetch('/submit_nutrition', {
                     method: 'POST',
@@ -116,7 +96,7 @@
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById("ai-nutrition").innerHTML = data; // Display AI response
-                    
+
 
                 })
                 .catch(error => console.error("Error:", error));
@@ -125,6 +105,60 @@
             }
         });
 
+        // Handle "Find an Alternative" form submission
+        document.getElementById("submitAlternative").addEventListener("click", function() {
+            let userInput = document.getElementById("alternativeInput").value.trim();
+            
+            if (userInput !== "") {
+                fetch('/get_alternatives', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ingredient: userInput }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const alternativesList = document.getElementById('alternatives-list');
+                    alternativesList.innerHTML = '';  // Clear previous results
+
+                    // Display each alternative as an expandable card
+                    data.alternatives.forEach(alternative => {
+                        const card = document.createElement('div');
+                        card.classList.add('card', 'mb-3');
+                        card.innerHTML = `
+                            <div class="card-header" onclick="toggleCardBody(this)">
+                                <h5>${alternative.name}</h5>
+                            </div>
+                            <div class="card-body" style="display: none;">
+                                <p><strong>Calories:</strong> ${alternative.calories}</p>
+                                <p><strong>Protein:</strong> ${alternative.protein}g</p>
+                                <p><strong>Carbs:</strong> ${alternative.carbs}g</p>
+                                <p><strong>Fats:</strong> ${alternative.fats}g</p>
+                                <p><strong>Price:</strong> $${alternative.price}</p>
+                            </div>
+                        `;
+                        alternativesList.appendChild(card);
+                    });
+
+                    // Close the modal after submission
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('alternativeModal'));
+                    modal.hide();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to fetch alternatives. Please try again.');
+                });
+            } else {
+                alert("Please enter a valid ingredient.");
+            }
+        });
+
+        // Toggle expand/collapse for card bodies
+        function toggleCardBody(header) {
+            const cardBody = header.nextElementSibling;
+            cardBody.style.display = cardBody.style.display === 'none' ? 'block' : 'none';
+        }
     </script>
 
     <!-- Bootstrap JS -->

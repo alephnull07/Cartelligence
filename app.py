@@ -5,14 +5,20 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_migrate import Migrate
 import google.generativeai as genai
 import time 
+from dotenv import load_dotenv
+import os
+from gemini_api import generate_alternatives
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 model = genai.GenerativeModel('gemini-pro')
-genai.configure(api_key="key")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-
+USDA_API_KEY = os.getenv("USDA_API_KEY")
+USDA_BASE_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -248,47 +254,51 @@ def delete_list(list_id):
         flash('List not found or you do not have permission to delete it.', 'danger')
         return redirect(url_for('dashboard'))
 
-@app.route('/most_popular_item', methods=['GET'])
-@login_required
-def most_popular_item():
-    from gemini_api import get_most_popular_item
-    """Returns the most popular grocery item across all lists."""
-    popular_item = get_most_popular_item()
-    return jsonify({"most_popular_item": popular_item})
-
-@app.route('/generate_ai_list', methods=['POST'])
-@login_required
-def generate_ai_list():
-    from gemini_api import generateList
+# @app.route('/generate_ai_list', methods=['POST'])
+# @login_required
+# def generate_ai_list():
+#     from gemini_api import generateList
     
-    ai_response = generateList(current_user.dietary, current_user.budget)
-    # print(ai_response)
+#     ai_response = generateList(current_user.dietary, current_user.budget)
+#     # print(ai_response)
 
-    return jsonify(ai_response)
+#     return jsonify(ai_response)
 
-@app.route('/submit_alternative', methods=['POST'])
-@login_required
-def submit_alternative():
-    from gemini_api import generateAlternative
+# @app.route('/submit_alternative', methods=['POST'])
+# @login_required
+# def submit_alternative():
+#     from gemini_api import generateAlternative
     
-    data = request.json
-    ingredient = data.get('alternative')
-    ai_response = generateAlternative(ingredient)
-    # print(ai_response)
+#     data = request.json
+#     ingredient = data.get('alternative')
+#     ai_response = generateAlternative(ingredient)
+#     # print(ai_response)
 
-    return jsonify(ai_response)
+#     return jsonify(ai_response)
 
 @app.route('/submit_nutrition', methods=['POST'])
 @login_required
 def submit_nutrition():
-    from gemini_api import generateNutrition
+    from gemini_api import get_nutritional_info
     
     data = request.json
     ingredient = data.get('nutrition')
-    ai_response = generateNutrition(ingredient)
+    ai_response = get_nutritional_info(ingredient)
     print(ai_response)
 
     return jsonify(ai_response)
+
+@app.route('/get_alternatives', methods=['POST'])
+@login_required
+def get_alternatives():
+    data = request.json
+    ingredient = data.get('ingredient')
+    dietary = current_user.dietary
+    budget = current_user.budget
+
+    # Call the generate_alternatives function
+    alternatives = generate_alternatives(ingredient, dietary, budget)
+    return jsonify({"alternatives": alternatives})
 
 @app.route('/logout')
 @login_required
