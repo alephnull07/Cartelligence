@@ -6,12 +6,14 @@ from flask_migrate import Migrate
 import google.generativeai as genai
 import time 
 import json
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 model = genai.GenerativeModel('gemini-pro')
-genai.configure(api_key="key")
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 generation_config = {
         "temperature": 1,
         "top_p": 0.95,
