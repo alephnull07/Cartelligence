@@ -38,11 +38,12 @@ def get_most_popular_item_for_user(user_id):
 
 def generateList(diet, budget):
     prompt = (
-    "Generate a grocery list of **only specific ingredients** based on the following dietary restrictions: "
+    "Generate a grocery list of **strictly five specific ingredients** based on the following dietary restrictions: "
     f"{diet} and budget constraints: {budget}. "
+    "Capitalize *the first letter* of each ingredient."
     "Avoid umbrella terms like 'bean (black, pinto, canned)' or 'frozen fruit'. Instead, list individual items like 'black beans' or 'strawberries'. "
-    "Format the response strictly as a **Python string**, with no additional text or headings. Separate each entry with commas."
-    "Example: ['apples', 'bananas', 'broccoli']"
+    "Format the response strictly as a **comma-separated string**, with no additional text or headings. Separate each entry with commas."
+    "Example: 'Black beans, Bananas, Broccoli, Carrots, Eggs'"
     )
 
     model = genai.GenerativeModel("gemini-pro")
