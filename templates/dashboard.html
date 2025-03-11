@@ -101,9 +101,14 @@
                 
                 <div class="recipes-container">
                     <h1 style="font-size: 30px;" class="recipe-header">Recipe Generator</h1>
-                    <button type="button" class="btn ai-generate-btn" onclick="generateAIList()">
+                    <button type="button" class="btn ai-generate-btn" onclick="generateRecipe()">
                         Generate Recipe
                     </button>
+                    <p id="ai-output">
+                        
+                    </p>
+
+                    
                 </div>
             </div>
 
@@ -154,9 +159,7 @@
     </div>
 
     <!-- <div>
-        <p id="ai-output">
-            This is an AI output.
-        </p>
+        
     </div> -->
     <script>
         // Initialize all toasts when the page loads
@@ -367,15 +370,17 @@
         }
 
 
-        function generateAIList() {
-            fetch('/generate_ai_list', {method: 'POST'})
+        function generateRecipe() {
+            fetch('/generate_recipe', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => {
                 let output = "<ul>";
-                data.forEach(item => {
-                    output += `<li>${item}</li>`;  // Format each item as a bullet point
+                data.ingredients.forEach(item => {
+                    output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
                 });
+                console.log(output);
                 output += "</ul>";
+                output += data.instructions;
                 document.getElementById('ai-output').innerHTML = output;
             })
         }
