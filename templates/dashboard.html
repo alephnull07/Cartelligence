@@ -144,18 +144,12 @@
                 </div>
             </div>
         </div>
-
-        <button type="button" class="btn ai-generate-btn" onclick="generateAIList()">
-            AI Generate Ingredients!
-        </button>
         
     </div>
 
-    <div>
-        <p id="ai-output">
-            hi
-        </p>
-    </div>
+    <!-- <div>
+        
+    </div> -->
     <script>
         // Initialize all toasts when the page loads
         document.addEventListener('DOMContentLoaded', function () {
@@ -266,7 +260,7 @@
         // Save list functionality: Save and display the list as an expandable card
         async function saveList() {
             const listName = document.getElementById('listName').value;
-            const groceryLists = document.getElementById('grocery-lists');
+            const groceryLists = document.querySelector('.cards-container');
 
             if (!groceryLists) {
                 alert("Error: Cannot find #grocery-lists container.");
@@ -316,6 +310,9 @@
                         `;
 
                         groceryLists.appendChild(newCard);
+                        
+                        // Force reflow to adjust layout
+                        groceryLists.offsetHeight; // Trigger reflow by accessing offsetHeight
 
                         // Reset form and modal
                         document.getElementById('listForm').reset();
@@ -365,15 +362,17 @@
         }
 
 
-        function generateAIList() {
-            fetch('/generate_ai_list', {method: 'POST'})
+        function generateRecipe() {
+            fetch('/generate_recipe', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => {
                 let output = "<ul>";
-                data.forEach(item => {
-                    output += `<li>${item}</li>`;  // Format each item as a bullet point
+                data.ingredients.forEach(item => {
+                    output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
                 });
+                console.log(output);
                 output += "</ul>";
+                output += data.instructions;
                 document.getElementById('ai-output').innerHTML = output;
             })
         }

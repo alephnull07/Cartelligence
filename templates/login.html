@@ -5,11 +5,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
+<body style="background-color: #f5ece5;">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg" style="background-color: #45523e;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Cartelligence</a>
+            <a class="navbar-brand" href="/" style="color: #ffff;">Cartelligence</a>
         </div>
     </nav>
 
@@ -59,22 +59,22 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card shadow">
-                    <div class="card-body">
-                        <h3 class="card-title text-center">Login</h3>
+                    <div class="card-body" style="background-color: #6d8b65;">
+                        <h3 class="card-title text-center" style="color: #fff;">Login</h3>
                         <form method="POST">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
+                                <label for="email" class="form-label" style="color: #fff;">Email</label>
                                 <!-- Pre-fill the email input -->
                                 <input type="email" class="form-control" id="email" name="email" value="{{ email }}" required>
                             </div>
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
+                                <label for="password" class="form-label" style="color: #fff;">Password</label>
                                 <!-- Password is cleared after form submission -->
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                            <button type="submit" class="btn w-100" style="color: #fff; background-color: #45523e;">Login</button>
                         </form>
-                        <p class="text-center mt-3">Don't have an account? <a href="/register">Register here</a></p>
+                        <p class="text-center mt-3" style="color: #fff;">Don't have an account? <a href="/register" style="color: #45523e;">Register here</a></p>
                     </div>
                 </div>
             </div>
