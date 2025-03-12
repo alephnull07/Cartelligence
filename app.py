@@ -6,12 +6,14 @@ from flask_migrate import Migrate
 import google.generativeai as genai
 import time 
 import json
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 model = genai.GenerativeModel('gemini-pro')
-genai.configure(api_key="key")
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 generation_config = {
         "temperature": 1,
         "top_p": 0.95,
@@ -257,17 +259,14 @@ def most_popular_item():
     popular_item = get_most_popular_item()
     return jsonify({"most_popular_item": popular_item})
 
-@app.route('/generate_ai_list', methods=['POST'])
+@app.route('/generate_recipe', methods=['POST'])
 @login_required
-def generate_ai_list():
-    from gemini_api import generateList
+def generate_recipe():
+    from gemini_api import generateRecipe
     
-    ai_response = generateList(current_user.dietary, current_user.budget)
-    foods = ai_response.split(",")
-    print(foods)
+    instructions, ingredients = generateRecipe(current_user.dietary, current_user.budget)
     
-    
-    return jsonify(foods)
+    return jsonify({"instructions": instructions, "ingredients": ingredients})
 
 @app.route('/submit_alternative', methods=['POST'])
 @login_required

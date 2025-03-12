@@ -75,6 +75,19 @@ body.has-topbar .main-content {
     margin-bottom: 20px;
 }
 
+.header-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.recipe-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+}
+
 /* Card Styles */
 .grocery-list-card {
     max-width: 200px; /* Adjust the width as needed */
@@ -115,14 +128,11 @@ body.has-topbar .main-content {
 .card-body form {
     margin-top: 10px;
 }
+
 .cards-container {
     display: block;
-    padding: 20px;
-    margin-top: 20px; 
-    position:absolute; 
-    top:15%; 
-    right:4%; 
-
+    margin-top: 6px;
+    position: relative;
 }
 
 /* Button Styles */
@@ -130,13 +140,11 @@ body.has-topbar .main-content {
 
 /* Style for the "Add a New Food List" button */
 .add-food-list-btn {
-    position: fixed;
-    right: 80px;
     background-color: #6d8b65; /* Green */
     border-color: #587d44;
     color: #fdfffa;
     font-family: 'Roboto', sans-serif;
-    padding: 15px 30px;
+    padding: 5px 20px;
     font-size: 1.2rem;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -149,16 +157,25 @@ body.has-topbar .main-content {
     transform: scale(1.05);
 }
 
-.ai-generate-btn{
+.ai-generate-btn {
     background-color: #6d8b65; /* Green */
     border-color: #587d44;
     color: #fdfffa;
     font-family: 'Roboto', sans-serif;
-    padding: 15px 30px;
+    padding: 5px 20px;
     font-size: 1.2rem;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, transform 0.3s;
+}
+
+.button-container .ai-generate-btn {
+    /* Make sure the button stays at the right position */
+    margin-left: auto;  /* This ensures the button aligns with the right side */
+}
+
+.recipe-header {
+    text-align: right;  /* Align the Recipe Generator header to the right */
 }
 
 .ai-generate-btn:hover {
@@ -169,6 +186,9 @@ body.has-topbar .main-content {
 
 #ai-output {
     color: #4e4136;
+    width: 45%; 
+    white-space: pre-wrap; 
+    overflow-wrap: break-word; 
 }
 
 .nutrition-btn{
