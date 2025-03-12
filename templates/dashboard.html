@@ -96,9 +96,11 @@
                             </div>
                         </div>
                         {% endfor %}
+                        <!-- ADD THIS CONTAINER TO FIX THE ERROR -->
                     </div>
                 </div>
                 
+
                 <div class="recipes-container">
                     <h1 style="font-size: 30px;" class="recipe-header">Recipe Generator</h1>
                     <button type="button" class="btn ai-generate-btn" onclick="generateRecipe()">
@@ -111,6 +113,9 @@
                     
                 </div>
             </div>
+
+        <!-- ADD THIS CONTAINER TO FIX THE ERROR -->
+        <div id="grocery-lists"></div>
 
         <!-- Modal for Adding/Editing Grocery Lists -->
         <div class="modal fade" id="listModal" tabindex="-1" aria-hidden="true">
@@ -271,7 +276,7 @@
         // Save list functionality: Save and display the list as an expandable card
         async function saveList() {
             const listName = document.getElementById('listName').value;
-            const groceryLists = document.getElementById('grocery-lists');
+            const groceryLists = document.querySelector('.cards-container');
 
             if (!groceryLists) {
                 alert("Error: Cannot find #grocery-lists container.");
