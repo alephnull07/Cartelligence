@@ -1,6 +1,7 @@
 from app import db, GroceryList, GroceryItem
 from collections import Counter
 import google.generativeai as genai
+import re
 
 # 🔴 Hardcode API key for now (replace with dotenv later)
 genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
@@ -31,26 +32,46 @@ def get_most_popular_item_for_user(user_id):
     Identify the single most commonly purchased grocery item by this user and return only its name.
     """
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(prompt)
     
     return response.text.strip()  # Clean output
 
-def generateList(diet, budget):
+def generateRecipe(diet, budget):
     prompt = (
-    "Generate a grocery list of **strictly five specific ingredients** based on the following dietary restrictions: "
-    f"{diet} and budget constraints: {budget}. "
-    "Capitalize *the first letter* of each ingredient."
-    "Avoid umbrella terms like 'bean (black, pinto, canned)' or 'frozen fruit'. Instead, list individual items like 'black beans' or 'strawberries'. "
-    "Format the response strictly as a **comma-separated string**, with no additional text or headings. Separate each entry with commas."
-    "Example: 'Black beans, Bananas, Broccoli, Carrots, Eggs'"
+        "Generate an **easy-to-follow recipe** based on the following dietary restrictions: "
+        f"{diet} and budget constraints: {budget}. "
+        "The recipe should be suitable for a beginner cook and should not require any special equipment."
+        ""
+        "Based on the recipe, generate a **comprehensive grocery list** that includes all necessary ingredients."
+        "Capitalize *the first letter* of each ingredient."
+        "Avoid umbrella terms like 'bean (black, pinto, canned)' or 'frozen fruit'. Instead, list individual items like 'black beans' or 'strawberries'. "
+        "Format the response **exactly** as follows:\n\n"
+        "**Instructions:**\n(Provide the step-by-step instructions as a single paragraph.)\n\n"
+        "**Ingredients:**\n(List each ingredient on a new line, without numbering or bullet points.)"
     )
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     convo = model.start_chat(history=[])
+
     response = convo.send_message(prompt)
 
-    return convo.last.text
+    response_text = convo.last.text.strip()
+
+    print("Raw AI Response:\n", response_text)  # Debugging output
+
+    # Extract instructions and ingredients using regex
+    instructions_match = re.search(r"\*\*Instructions:\*\*\n(.+?)(?=\n\*\*Ingredients:\*\*)", response_text, re.DOTALL)
+    ingredients_match = re.search(r"\*\*Ingredients:\*\*\n(.+)", response_text, re.DOTALL)
+
+    if not instructions_match or not ingredients_match:
+        print("Error: Could not parse AI response properly.")
+        return "Error: Unable to generate recipe.", []
+
+    instructions = instructions_match.group(1).strip()
+    ingredients = [line.strip() for line in ingredients_match.group(1).split("\n") if line.strip()]
+
+    return instructions, ingredients
 
 def generateAlternative(ingredient):
     prompt = (
@@ -58,7 +79,7 @@ def generateAlternative(ingredient):
     "Avoid umbrella terms like 'alternative milk (oat, almond, soy)'. Instead, list an individual item like 'oat milk'."
     )
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     convo = model.start_chat(history=[])
     response = convo.send_message(prompt)
 
@@ -72,7 +93,7 @@ def generateNutrition(ingredient):
         "Example: ['100 calories', '20g carbohydrates', '5g added sugars', '10g protein', '200mg sodium']"
     )
 
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-1.5-flash")
     convo = model.start_chat(history=[])
     response = convo.send_message(prompt)
 
