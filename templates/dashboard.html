@@ -373,21 +373,23 @@
                 cardBody.style.display = 'none';
             }
         }
-
-
         function generateRecipe() {
             fetch('/generate_recipe', {method: 'POST'})
                 .then(response => response.json())
                 .then(data => {
-                let output = "<ul>";
-                data.ingredients.forEach(item => {
-                    output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                    let output = `<h3>${data.title}</h3>`;  // Add the title
+                    output += "<ul>";
+                    data.ingredients.forEach(item => {
+                        output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                    });
+                    output += "</ul>";
+                    output += `<p>${data.instructions}</p>`;  // Add the instructions
+                    document.getElementById('ai-output').innerHTML = output;
+                })
+                .catch(error => {
+                    console.error('Error generating recipe:', error);
+                    document.getElementById('ai-output').innerHTML = 'Error generating recipe. Please try again.';
                 });
-                console.log(output);
-                output += "</ul>";
-                output += data.instructions;
-                document.getElementById('ai-output').innerHTML = output;
-            })
         }
     </script>
 

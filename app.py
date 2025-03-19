@@ -263,10 +263,12 @@ def most_popular_item():
 @login_required
 def generate_recipe():
     from gemini_api import generateRecipe
+    print(f"Current User Dietary: {current_user.dietary}")
+    print(f"Current User Budget: {current_user.budget}")
     
-    instructions, ingredients = generateRecipe(current_user.dietary, current_user.budget)
+    instructions, ingredients, title = generateRecipe(current_user.dietary, current_user.budget)
     
-    return jsonify({"instructions": instructions, "ingredients": ingredients})
+    return jsonify({ "title": title, "instructions": instructions, "ingredients": ingredients})
 
 @app.route('/submit_alternative', methods=['POST'])
 @login_required
