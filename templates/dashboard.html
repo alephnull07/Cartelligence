@@ -100,17 +100,12 @@
                     </div>
                 </div>
                 
-
                 <div class="recipes-container">
                     <h1 style="font-size: 30px;" class="recipe-header">Recipe Generator</h1>
                     <button type="button" class="btn ai-generate-btn" onclick="generateRecipe()">
                         Generate Recipe
                     </button>
-                    <p id="ai-output">
-                        
-                    </p>
-
-                    
+                    <div id="ai-output"></div>  
                 </div>
             </div>
 
@@ -363,7 +358,6 @@
             }
         }
 
-
         // Function to toggle the card's body visibility (expand/collapse)
         function toggleCardBody(headerElement) {
             const cardBody = headerElement.nextElementSibling;
@@ -373,17 +367,28 @@
                 cardBody.style.display = 'none';
             }
         }
+
         function generateRecipe() {
-            fetch('/generate_recipe', {method: 'POST'})
+            fetch('/generate_recipe', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
-                    let output = `<h3>${data.title}</h3>`;  // Add the title
+                    if (!data.title || !data.ingredients || !data.instructions) {
+                        document.getElementById('ai-output').innerHTML = "Error: Incomplete recipe data.";
+                        return;
+                    }
+
+                    let output = `<h3>${data.title.trim()}</h3>`;  // Add the title
                     output += "<ul>";
+
                     data.ingredients.forEach(item => {
-                        output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                        if (item.trim()) {
+                            output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                        }
                     });
+
                     output += "</ul>";
-                    output += `<p>${data.instructions}</p>`;  // Add the instructions
+                    output += `<p>${data.instructions.trim()}</p>`;  // Add the instructions
+
                     document.getElementById('ai-output').innerHTML = output;
                 })
                 .catch(error => {
