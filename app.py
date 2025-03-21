@@ -259,17 +259,16 @@ def most_popular_item():
     popular_item = get_most_popular_item()
     return jsonify({"most_popular_item": popular_item})
 
-@app.route('/generate_ai_list', methods=['POST'])
+@app.route('/generate_recipe', methods=['POST'])
 @login_required
-def generate_ai_list():
-    from gemini_api import generateList
+def generate_recipe():
+    from gemini_api import generateRecipe
+    print(f"Current User Dietary: {current_user.dietary}")
+    print(f"Current User Budget: {current_user.budget}")
     
-    ai_response = generateList(current_user.dietary, current_user.budget)
-    foods = ai_response.split(",")
-    print(foods)
+    instructions, ingredients, title = generateRecipe(current_user.dietary, current_user.budget)
     
-    
-    return jsonify(foods)
+    return jsonify({ "title": title, "instructions": instructions, "ingredients": ingredients})
 
 @app.route('/submit_alternative', methods=['POST'])
 @login_required

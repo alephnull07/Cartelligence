@@ -47,6 +47,7 @@
     transform: scale(1.05);
 }
 
+
 /* Top Bar Styles */
 .topbar {
     background-color: #45523e; /* Dark green */
@@ -60,6 +61,7 @@
     z-index: 1000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
 
 /* Main Content Styles */
 .main-content {
@@ -80,6 +82,24 @@ body.has-topbar .main-content {
     flex-direction: row;
     justify-content: space-evenly;
 }
+
+.recipes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#ai-output {
+    padding: 20px;
+    align-self: center;
+    max-width: 45vw; /* Allow it to grow within the limit */
+    max-height: 80vh;
+    overflow: auto; /* Enable scrolling if content exceeds height */
+    white-space: pre-wrap;
+    overflow-wrap: break-word; /* Ensure long words break properly */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
 
 /* Card Styles */
 .grocery-list-card {
@@ -179,6 +199,9 @@ body.has-topbar .main-content {
 
 #ai-output {
     color: #4e4136;
+    width: 45%; 
+    white-space: pre-wrap; 
+    overflow-wrap: break-word; 
 }
 
 .nutrition-btn{
