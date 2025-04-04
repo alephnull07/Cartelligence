@@ -89,15 +89,45 @@ body.has-topbar .main-content {
     align-items: center;
 }
 
-#ai-output {
-    padding: 20px;
-    align-self: center;
-    max-width: 45vw; /* Allow it to grow within the limit */
-    max-height: 80vh;
-    overflow: auto; /* Enable scrolling if content exceeds height */
+/* Replace your ai-output related CSS with these rules */
+#ai-output .recipe-container {
+    width: 100%;
+}
+
+#ai-output h3 {
+    color: #2e5233;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#ai-output h5 {
+    color: #4a7a50;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#ai-output .ingredient-list {
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    list-style-type: disc;
+}
+
+#ai-output .ingredient-list li {
+    margin-bottom: 0.25rem;
+}
+
+#ai-output .instructions-text {
+    line-height: 1.5;
     white-space: pre-wrap;
-    overflow-wrap: break-word; /* Ensure long words break properly */
-    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+
+/* Modal Styles */
+#generateRecipeModal .modal-header {
+    background-color: #45523e;
+    color: #fdfffa;
+    font-family: 'Roboto', sans-serif;
 }
 
 
@@ -195,13 +225,6 @@ body.has-topbar .main-content {
     background-color: #45523e; /* Darker green */
     color: #fdfffa;
     transform: scale(1.05);
-}
-
-#ai-output {
-    color: #4e4136;
-    width: 45%; 
-    white-space: pre-wrap; 
-    overflow-wrap: break-word; 
 }
 
 .nutrition-btn{

@@ -6,10 +6,12 @@ import re
 # 🔴 Hardcode API key for now (replace with dotenv later)
 genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
 
+
 def get_user_items(user_id):
     """Fetch all grocery items from a specific user's grocery lists."""
     items = [item.name for item in GroceryItem.query.join(GroceryList).filter(GroceryList.user_id == user_id).all()]
     return items
+
 
 def get_most_popular_item_for_user(user_id):
     """Find the most frequently purchased grocery item for a single user."""
@@ -80,6 +82,48 @@ def generateRecipe(diet, budget):
     
     return instructions, ingredients, title
 
+
+def customRecipe(name, diet, budget):
+    prompt = (
+        "Generate an easy-to-follow recipe based on the following food name: "
+        f"{name}. and dietary restrictions: {diet} and budget constraints: {budget}. "
+        "The recipe should be suitable for a beginner cook and should not require any special equipment. "
+        "Based on the recipe, generate a comprehensive grocery list that includes all necessary ingredients. "
+        "Capitalize the first letter of each ingredient. "
+        "Avoid umbrella terms like 'bean (black, pinto, canned)' or 'frozen fruit'. Instead, list individual items like 'black beans' or 'strawberries'. "
+        "Format the response exactly as follows:\n\n"
+        "Title:\n(Include a title for the recipe)\n\n"
+        "Instructions:\n(Provide the step-by-step instructions as a single paragraph.)\n\n"
+        "Ingredients:\n(List each ingredient on a new line, without numbering or bullet points.)"
+    )
+
+    response = convo.send_message(prompt)
+
+    response_text = convo.last.text.strip()
+
+    print("Raw AI Response:\n", response_text)  # Debugging output
+
+    # Extract title, instructions, and ingredients using regex
+    title_match = re.search(r"(?i)Title:\s*(.+?)(?=\nInstructions:|\nIngredients:|$)", response_text, re.DOTALL)
+    instructions_match = re.search(r"(?i)Instructions:\s*(.+?)(?=\nIngredients:|$)", response_text, re.DOTALL)
+    ingredients_match = re.search(r"(?i)Ingredients:\s*(.+)", response_text, re.DOTALL)
+
+    # Debugging output for regex matches
+    print("Title Match:", title_match)
+    print("Instructions Match:", instructions_match)
+    print("Ingredients Match:", ingredients_match)
+
+    if not title_match or not instructions_match or not ingredients_match:
+        print("Error: Could not parse AI response properly.")
+        return "Error: Unable to generate recipe.", [], ""
+
+    title = title_match.group(1).strip()
+    instructions = instructions_match.group(1).strip()
+    ingredients = [line.strip() for line in ingredients_match.group(1).split("\n") if line.strip()]
+    
+    return instructions, ingredients, title
+
+
 def generateAlternative(ingredient):
     prompt = (
     "Please concisely find a single substitute for this ingredient: " + ingredient + "."
@@ -91,6 +135,7 @@ def generateAlternative(ingredient):
     response = convo.send_message(prompt)
 
     return convo.last.text
+
 
 def generateNutrition(ingredient):
 

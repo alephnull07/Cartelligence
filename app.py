@@ -270,6 +270,22 @@ def generate_recipe():
     
     return jsonify({ "title": title, "instructions": instructions, "ingredients": ingredients})
 
+@app.route('/custom_generate', methods=['POST'])
+@login_required
+def custom_generate():
+    from gemini_api import customRecipe
+
+    data = request.json
+    dish_name = data.get('dishName')
+    print(f"Requested Dish: {dish_name}")
+    print(f"Current User Dietary: {current_user.dietary}")
+    print(f"Current User Budget: {current_user.budget}")
+    
+    instructions, ingredients, title = customRecipe(dish_name, current_user.dietary, current_user.budget)
+    
+    return jsonify({ "title": title, "instructions": instructions, "ingredients": ingredients})
+
+
 @app.route('/submit_alternative', methods=['POST'])
 @login_required
 def submit_alternative():
