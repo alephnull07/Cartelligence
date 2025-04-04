@@ -269,3 +269,25 @@ body.has-topbar .main-content {
 #edit-btn {
     background-color: #c47a6d; /* Red */
 }
+
+.header-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.recipes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-items: center;
+}
+
+#ai-output {
+    padding: 20px;
+    align-self: center;
+    max-width: 45%; /* Allow it to grow within the limit /
+    white-space: pre-wrap;
+    overflow-wrap: break-word; / Ensure long words break properly /
+    box-sizing: border-box; / Include padding in width calculation */
+}
