@@ -100,6 +100,13 @@ body.has-topbar .main-content {
     box-sizing: border-box; /* Include padding in width calculation */
 }
 
+/* Modal Styles */
+#generateRecipeModal .modal-header {
+    background-color: #45523e;
+    color: #fdfffa;
+    font-family: 'Roboto', sans-serif;
+}
+
 
 /* Card Styles */
 .grocery-list-card {

@@ -102,7 +102,7 @@
                 
                 <div class="recipes-container">
                     <h1 style="font-size: 30px;" class="recipe-header">Recipe Generator</h1>
-                    <button type="button" class="btn ai-generate-btn" onclick="generateRecipe()">
+                    <button type="button" class="btn ai-generate-btn" data-bs-toggle="modal" data-bs-target="#generateRecipeModal">
                         Generate Recipe
                     </button>
                     <div id="ai-output"></div>  
@@ -155,6 +155,68 @@
                 </div>
             </div>
         </div>
+
+      <!-- Modal for Generating Recipe -->
+      <div class="modal fade" id="generateRecipeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2e5233; color: white;">
+                    <h5 class="modal-title" id="generateRecipeModalTitle">
+                        <i class="bi bi-journal-text me-2"></i>Recipe Generator
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #f5ece5;">
+                    <div class="row">
+                        <!-- Option 1: User enters a dish name -->
+                        <div class="col-12 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header" style="background-color: #4a7a50; color: white;">
+                                    <h5 class="mb-0">Custom Recipe</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="dishName" class="form-label fw-medium mb-2">Enter Dish Name:</label>
+                                        <div class="input-group mb-3">
+                                            <input type="text" id="dishName" class="form-control" 
+                                                placeholder="e.g., Chicken Parmesan, Vegan Lasagna" aria-label="Dish name">
+                                            <button class="btn px-4" type="button" 
+                                                    onclick="generateCustomRecipe()" data-bs-dismiss="modal"
+                                                    style="background-color: #4a7a50; color: white;">
+                                                Generate
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Option 2: Auto-Generate dish -->
+                        <div class="col-12">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header" style="background-color: #2e5233; color: white;">
+                                    <h5 class="mb-0">Surprise Me</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">Let us generate a random recipe based on your preferences.</p>
+                                    <button type="button" class="btn w-100" 
+                                            onclick="autoGenerateRecipe()" data-bs-dismiss="modal"
+                                            style="background-color: #2e5233; color: white;">
+                                        <i class="bi bi-magic me-2"></i>Auto-Generate Recipe
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #e8dfd5;">
+                    <small class="text-muted me-auto">Recipes are tailored to your dietary preferences and budget settings</small>
+                    <button type="button" class="btn" data-bs-dismiss="modal" 
+                           style="background-color: #4a7a50; color: white;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
         
     </div>
 
@@ -368,7 +430,50 @@
             }
         }
 
-        function generateRecipe() {
+        function generateCustomRecipe() {
+            const dishName = document.getElementById('dishName').value;  // Capture the dish name from input field
+
+            if (!dishName.trim()) {
+                alert('Please enter a dish name!');
+                return;
+            }
+
+            // Send the dish name to the backend
+            fetch('/custom_generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dishName: dishName })  // Include dish name in the request body
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.title || !data.ingredients || !data.instructions) {
+                    document.getElementById('ai-output').innerHTML = "Error: Incomplete recipe data.";
+                    return;
+                }
+
+                let output = `<h3>${data.title.trim()}</h3>`;  // Add the title
+                output += "<ul>";
+
+                data.ingredients.forEach(item => {
+                    if (item.trim()) {
+                        output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                    }
+                });
+
+                output += "</ul>";
+                output += `<p>${data.instructions.trim()}</p>`;  // Add the instructions
+
+                document.getElementById('ai-output').innerHTML = output;
+            })
+            .catch(error => {
+                console.error('Error generating recipe:', error);
+                document.getElementById('ai-output').innerHTML = 'Error generating recipe. Please try again.';
+            });
+        }
+
+        function autoGenerateRecipe() {
             fetch('/generate_recipe', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
