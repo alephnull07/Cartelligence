@@ -2,10 +2,15 @@ from app import db, GroceryList, GroceryItem
 from collections import Counter
 import google.generativeai as genai
 import re
+import os
+from dotenv import load_dotenv
 
-# 🔴 Hardcode API key for now (replace with dotenv later)
-genai.configure(api_key="AIzaSyB4XhwtIgPFclhqnxpvH05dBkDNwW0vEi4")
+# Load environment variables from a .env file
+load_dotenv()
 
+# Retrieve the API key from the environment
+api_key = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 def get_user_items(user_id):
     """Fetch all grocery items from a specific user's grocery lists."""
@@ -125,10 +130,21 @@ def customRecipe(name, diet, budget):
 
 
 def generateAlternative(ingredient):
-    prompt = (
-    "Please concisely find a single substitute for this ingredient: " + ingredient + "."
-    "Avoid umbrella terms like 'alternative milk (oat, almond, soy)'. Instead, list an individual item like 'oat milk'."
-    )
+    prompt = f"""
+    As a nutrition expert, provide 3-4 high-quality alternatives to {ingredient} using the exact format below:
+
+    # Alternatives for {ingredient}
+
+    1. [Alternative Name]: [1-2 sentence description explaining why it's a good substitute, with nutrition comparison]
+    2. [Alternative Name]: [1-2 sentence description explaining why it's a good substitute, with nutrition comparison] 
+    3. [Alternative Name]: [1-2 sentence description explaining why it's a good substitute, with nutrition comparison]
+    
+    For each alternative:
+    - Provide specific nutritional benefits compared to the original ingredient
+    - Include whether it's more budget-friendly, healthier, or has other advantages
+    - Mention any taste or texture differences
+    - Focus on commonly available substitutes
+    """
 
     model = genai.GenerativeModel("gemini-1.5-flash")
     convo = model.start_chat(history=[])
@@ -138,15 +154,33 @@ def generateAlternative(ingredient):
 
 
 def generateNutrition(ingredient):
+    prompt = f"""
+    As a nutrition expert, provide a detailed but concise nutritional analysis of {ingredient} using exactly the format below:
 
-    prompt = (
-        "Please concisely list the number of calories, carbohydrates, and added sugars (if any) and the amount of protein and sodium in this grocery item: " + f"{ingredient}"
-        "Format the response strictly as a **Python string**, with no additional text or headings. Separate each entry with commas."
-        "Example: ['100 calories', '20g carbohydrates', '5g added sugars', '10g protein', '200mg sodium']"
-    )
+    # Nutrition Facts: {ingredient}
+
+    ## Nutritional Values (per 100g)
+    - Calories: [value] kcal
+    - Protein: [value]g
+    - Carbohydrates: [value]g
+    - Fat: [value]g
+    - Fiber: [value]g
+    - Sugar: [value]g
+    - Sodium: [value]mg
+
+    ## Health Benefits
+    - [Specific health benefit 1]
+    - [Specific health benefit 2]
+    - [Specific health benefit 3]
+
+    ## Key Information
+    [2-3 sentences with important nutritional context about this food]
+
+    Use accurate nutritional data. Be specific and evidence-based. Respond only with this structured format.
+    """
 
     model = genai.GenerativeModel("gemini-1.5-flash")
     convo = model.start_chat(history=[])
     response = convo.send_message(prompt)
-
+    
     return convo.last.text
