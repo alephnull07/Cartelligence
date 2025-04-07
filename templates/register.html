@@ -4,11 +4,11 @@
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body style="background-color: #f5ece5;">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg" style="background-color: #45523e;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">Cartelligence</a>
+            <a class="navbar-brand" href="/" style="color: #ffff;">Cartelligence</a>
         </div>
     </nav>
 
@@ -58,24 +58,24 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card shadow">
-                    <div class="card-body">
-                        <h3 class="card-title text-center">Register</h3>
+                    <div class="card-body" style="background-color: #6d8b65;">
+                        <h3 class="card-title text-center" style="color: #fff;">Register</h3>
                         <form method="POST">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label" style="color: #fff;">Username</label>
                                 <input type="text" class="form-control" id="username" name="username" value="{{ username or '' }}" required>
                             </div>
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
+                                <label for="email" class="form-label" style="color: #fff;">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" value="{{ email or '' }}" required>
                             </div>
                             <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
+                                <label for="password" class="form-label" style="color: #fff;">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Register</button>                            
+                            <button type="submit" class="btn w-100" style="color: #fff; background-color: #45523e;">Register</button>                            
                         </form>
-                        <p class="text-center mt-3">Already have an account? <a href="/login">Login here</a></p>
+                        <p class="text-center mt-3" >Already have an account? <a href="/login" style="color: #45523e;">Login here</a></p>
                     </div>
                 </div>
             </div>

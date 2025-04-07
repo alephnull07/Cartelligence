@@ -1,16 +1,15 @@
-{% extends "base.html" %}
-
-{% block title %}Dashboard{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
+content %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" />
     <style>
         .grocery-list-card {
             border: 1px solid #ddd;
@@ -19,167 +18,295 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .grocery-list-card .card-body {
             display: none;
         }
+
         .grocery-list-card.expanded .card-body {
             display: block;
         }
+
         .item-row {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
         }
-        .item-row input, .item-row select {
+
+        .item-row input,
+        .item-row select {
             margin-right: 10px;
         }
+
         .item-row button {
             margin-left: 10px;
         }
     </style>
-
 </head>
-<body style="background-color: #f5ece5; font-family: 'Roboto', sans-serif;">
+
+<body style="background-color: #f5ece5; font-family: 'Roboto', sans-serif">
+    <!-- Top bar with welcome message -->
     <div class="topbar">
-        <h2 style="margin: 0;">Welcome, <span style="font-family: 'Arial', sans-serif; color: #a8c7a0;">{{ username }}</span>!</h2>
+        <h2 style="margin: 0;">Welcome, <span style="font-family: 'Arial', sans-serif; color: #a8c7a0;">{{ username
+                }}</span>!</h2>
     </div>
+
     <!-- Main Content -->
-    <div class="content">
+    <div class="content container py-4">
         <!-- Flash Messages -->
         <div aria-live="polite" aria-atomic="true" class="position-relative">
             <div class="toast-container position-fixed top-0 end-0 p-3">
-              <!-- Flash Messages as Toasts -->
-              {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                  {% for message in messages %}
-                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
-                      <div class="toast-header">
+                <!-- Flash Messages as Toasts -->
+                {% with messages = get_flashed_messages() %} {% if messages %} {% for
+                message in messages %}
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                    <div class="toast-header">
                         <strong class="me-auto">Notification</strong>
                         <small>Just now</small>
                         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                      </div>
-                      <div class="toast-body">
-                        {{ message }}
-                      </div>
                     </div>
-                  {% endfor %}
-                {% endif %}
-              {% endwith %}
+                    <div class="toast-body">{{ message }}</div>
+                </div>
+                {% endfor %} {% endif %} {% endwith %}
             </div>
-          </div>
+        </div>
 
+        <!-- Main Section -->
         <div id="home-section" class="section">
-            <div class="header-container">
-                <div class="lists-container">
-                    <h1 style="font-size: 30px;">Grocery Lists</h1>
-                    <button type="button" class="btn add-food-list-btn" data-bs-toggle="modal" data-bs-target="#listModal">
-                        + Add a New List
-                    </button>
-                    <div class="cards-container">
-                        <!-- Area to display lists -->
-                        {% for list in grocery_lists %}
-                        <div class="card grocery-list-card">
-                            <div class="card-header" style="cursor: pointer;" onclick="toggleCardBody(this)">
-                                <h5>{{ list.name }}</h5>
-                            </div>
-                            <div class="card-body" style="display: none;">
-                                <ul>
-                                    {% for item in list.items %}
-                                        <li>{{ item.name }} - {{ item.type }}</li>
-                                    {% endfor %}
-                                </ul>
-                                
-                                <!-- Delete Form below items -->
-                                <form action="{{ url_for('delete_list', list_id=list.id) }}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this list?');">Delete List</button>
-                                </form>
+            <div class="row g-4">
+                <!-- Grocery Lists Section -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden">
+                        <div class="card-header d-flex justify-content-between align-items-center"
+                            style="background-color: #4a7a50; padding: 15px 20px">
+                            <h2 class="m-0" style="font-size: 24px; color: white">
+                                Grocery Lists
+                            </h2>
+                            <button type="button" class="btn add-food-list-btn" data-bs-toggle="modal"
+                                data-bs-target="#listModal" style="
+                                    background-color: #2e5233;
+                                    color: white;
+                                    border: none;
+                                    padding: 8px 16px;
+                                ">
+                                <i class="bi bi-plus-circle me-2"></i>Add a New List
+                            </button>
+                        </div>
+                        <div class="card-body" style="padding: 20px; max-height: 65vh; overflow-y: auto">
+                            <div class="cards-container"
+                                style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; justify-items: center; align-items: start;">
+                                <!-- Area to display lists -->
+                                {% for list in grocery_lists %}
+                                <div class="card grocery-list-card"
+                                    style="border-radius: 8px; border: 1px solid #ddd; width: 100%; max-width: 300px;">
+                                    <div class="card-header" style="cursor: pointer;" onclick="toggleCardBody(this)">
+                                        <h5>{{ list.name }}</h5>
+                                    </div>
+                                    <div class="card-body" style="display: none;">
+                                        <ul>
+                                            {% for item in list.items %}
+                                            <li>{{ item.name }} - {{ item.type }}</li>
+                                            {% endfor %}
+                                        </ul>
+
+                                        <!-- Delete Form below items -->
+                                        <form action="{{ url_for('delete_list', list_id=list.id) }}" method="POST"
+                                            style="display:inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Are you sure you want to delete this list?');">Delete
+                                                List</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if not grocery_lists %}
+                                <div class="text-center p-5" style="grid-column: span 2;">
+                                    <i class="bi bi-cart4" style="font-size: 2rem; color: #4a7a50"></i>
+                                    <p class="mt-3 text-muted">
+                                        No grocery lists yet. Create your first list!
+                                    </p>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
-                        <!-- ADD THIS CONTAINER TO FIX THE ERROR -->
                     </div>
                 </div>
-                
 
-                <div class="recipes-container">
-                    <h1 style="font-size: 30px;" class="recipe-header">Recipe Generator</h1>
-                    <button type="button" class="btn ai-generate-btn" onclick="generateRecipe()">
-                        Generate Recipe
-                    </button>
-                    <p id="ai-output">
-                        
-                    </p>
 
-                    
-                </div>
-            </div>
-
-        <!-- ADD THIS CONTAINER TO FIX THE ERROR -->
-        <div id="grocery-lists"></div>
-
-        <!-- Modal for Adding/Editing Grocery Lists -->
-        <div class="modal fade" id="listModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="listModalTitle">Create New List</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="listForm">
-                            <div class="mb-3">
-                                <label for="listName" class="form-label">List Name</label>
-                                <input type="text" class="form-control" id="listName" required>
-                            </div>
-                            <div id="itemRows">
-                                <!-- Item rows will be dynamically added here -->
-                                <div class="item-row">
-                                    <input type="text" class="form-control" placeholder="Item Name">
-                                    <select class="form-select">
-                                        <option value="Fruits">Fruits</option>
-                                        <option value="Vegetables">Vegetables</option>
-                                        <option value="Dairy Products">Dairy Products</option>
-                                        <option value="Meat & Protein">Meat & Protein</option>
-                                        <option value="Snacks & Sweets">Snacks & Sweets</option>
-                                        <option value="Frozen Foods">Frozen Foods</option>
-                                        <option value="Beverages">Beverages</option>
-                                        <option value="Spices & Sauces">Spices & Sauces</option>
-                                        <option value="Health Foods & Supplements">Health Foods & Supplements</option>
-                                        <option value="Grains">Grains</option>
-                                    </select>
-                                    <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
-                                    <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
+                <!-- Recipes Container Section -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden">
+                        <div class="card-header d-flex justify-content-between align-items-center"
+                            style="background-color: #2e5233; padding: 15px 20px">
+                            <h2 class="m-0 recipe-header" style="font-size: 24px; color: white">
+                                Recipe Generator
+                            </h2>
+                            <button type="button" class="btn ai-generate-btn" data-bs-toggle="modal"
+                                data-bs-target="#generateRecipeModal" style="
+                    background-color: #4a7a50;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                  ">
+                                <i class="bi bi-magic me-2"></i>Generate Recipe
+                            </button>
+                        </div>
+                        <div class="card-body" style="
+                  padding: 20px;
+                  height: 65vh;
+                  overflow-y: auto;
+                  background-color: #fafafa;
+                ">
+                            <div id="ai-output" class="p-3 text-center">
+                                <div class="my-5 py-5">
+                                    <i class="bi bi-journal-text" style="font-size: 2.5rem; color: #2e5233"></i>
+                                    <p class="mt-3 text-muted">Your recipes will appear here</p>
+                                    <p class="small text-muted">
+                                        Generate a custom recipe or let us surprise you!
+                                    </p>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="saveListBtn" onclick="saveList()" data-bs-dismiss="modal">Save List</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
     </div>
 
-    <!-- <div>
-        
-    </div> -->
+    <!-- Modal for Creating a New Grocery List -->
+    <div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #4a7a50; color: white">
+                    <h5 class="modal-title" id="listModalLabel">
+                        Create a New Grocery List
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="listForm">
+                        <div class="mb-3">
+                            <label for="listName" class="form-label">List Name</label>
+                            <input type="text" class="form-control" id="listName" required>
+                        </div>
+                        <div id="itemRows">
+                            <!-- Item rows will be dynamically added here -->
+                            <div class="item-row">
+                                <input type="text" class="form-control" placeholder="Item Name">
+                                <select class="form-select">
+                                    <option value="Fruits">Fruits</option>
+                                    <option value="Vegetables">Vegetables</option>
+                                    <option value="Dairy Products">Dairy Products</option>
+                                    <option value="Meat & Protein">Meat & Protein</option>
+                                    <option value="Snacks & Sweets">Snacks & Sweets</option>
+                                    <option value="Frozen Foods">Frozen Foods</option>
+                                    <option value="Beverages">Beverages</option>
+                                    <option value="Spices & Sauces">Spices & Sauces</option>
+                                    <option value="Health Foods & Supplements">Health Foods & Supplements</option>
+                                    <option value="Grains">Grains</option>
+                                </select>
+                                <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
+                                <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer" style="background-color: #e8dfd5">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn" style="background-color: #4a7a50; color: white"
+                        onclick="saveList()" data-bs-dismiss="modal">
+                        Save List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Generating Recipe -->
+    <div class="modal fade" id="generateRecipeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color: #2e5233; color: white">
+                    <h5 class="modal-title" id="generateRecipeModalTitle">
+                        <i class="bi bi-journal-text me-2"></i>Recipe Generator
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #f5ece5">
+                    <div class="row">
+                        <!-- Option 1: User enters a dish name -->
+                        <div class="col-12 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header" style="background-color: #4a7a50; color: white">
+                                    <h5 class="mb-0">Custom Recipe</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="dishName" class="form-label fw-medium mb-2">Enter Dish Name:</label>
+                                        <div class="input-group mb-3">
+                                            <input type="text" id="dishName" class="form-control"
+                                                placeholder="e.g., Chicken Parmesan, Vegan Lasagna"
+                                                aria-label="Dish name" />
+                                            <button class="btn px-4" type="button" onclick="generateCustomRecipe()"
+                                                data-bs-dismiss="modal" style="background-color: #4a7a50; color: white">
+                                                Generate
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Auto-Generate dish -->
+                        <div class="col-12">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header" style="background-color: #2e5233; color: white">
+                                    <h5 class="mb-0">Surprise Me</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted mb-3">
+                                        Let us generate a random recipe based on your preferences.
+                                    </p>
+                                    <button type="button" class="btn w-100" onclick="autoGenerateRecipe()"
+                                        data-bs-dismiss="modal" style="background-color: #2e5233; color: white">
+                                        <i class="bi bi-magic me-2"></i>Auto-Generate Recipe
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #e8dfd5">
+                    <small class="text-muted me-auto">Recipes are tailored to your dietary preferences and budget
+                        settings</small>
+                    <button type="button" class="btn" data-bs-dismiss="modal"
+                        style="background-color: #4a7a50; color: white">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize all toasts when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastElList = [].slice.call(document.querySelectorAll(".toast"));
             var toastList = toastElList.map(function (toastEl) {
-            return new bootstrap.Toast(toastEl, {
-                autohide: true, // Automatically hide the toast
-                delay: 3000     // Delay in milliseconds (5 seconds)
-            });
+                return new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 3000,
+                });
             });
 
             // Show all toasts
             toastList.forEach(function (toast) {
-            toast.show();
+                toast.show();
             });
         });
 
@@ -213,23 +340,23 @@
             const newRow = document.createElement('div');
             newRow.classList.add('item-row');
             newRow.innerHTML = `
-                <input type="text" class="form-control" placeholder="Item Name">
-                <select class="form-select">
-                    <option value="Fruits">Fruits</option>
-                    <option value="Vegetables">Vegetables</option>
-                    <option value="Dairy Products">Dairy Products</option>
-                    <option value="Meat & Protein">Meat & Protein</option>
-                    <option value="Snacks & Sweets">Snacks & Sweets</option>
-                    <option value="Frozen Foods">Frozen Foods</option>
-                    <option value="Beverages">Beverages</option>
-                    <option value="Spices & Sauces">Spices & Sauces</option>
-                    <option value="Health Foods & Supplements">Health Foods & Supplements</option>
-                    <option value="Grains">Grains</option>
-                </select>
-                <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
-                <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
-            `;
-            
+               <input type="text" class="form-control" placeholder="Item Name">
+               <select class="form-select">
+                   <option value="Fruits">Fruits</option>
+                   <option value="Vegetables">Vegetables</option>
+                   <option value="Dairy Products">Dairy Products</option>
+                   <option value="Meat & Protein">Meat & Protein</option>
+                   <option value="Snacks & Sweets">Snacks & Sweets</option>
+                   <option value="Frozen Foods">Frozen Foods</option>
+                   <option value="Beverages">Beverages</option>
+                   <option value="Spices & Sauces">Spices & Sauces</option>
+                   <option value="Health Foods & Supplements">Health Foods & Supplements</option>
+                   <option value="Grains">Grains</option>
+               </select>
+               <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
+               <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
+           `;
+
             // Append the new row to the item rows container
             itemRowsContainer.appendChild(newRow);
 
@@ -237,38 +364,6 @@
             const placeholderButton = itemRowsContainer.querySelector('.btn-light');
             if (placeholderButton) {
                 placeholderButton.remove();
-            }
-        }
-
-        // Remove item functionality
-        function removeItem(button) {
-            const row = button.closest('.item-row');
-            const itemName = row.querySelector('input').value;
-
-            // Get the index of the current item
-            const itemIndex = Array.from(row.parentElement.children).indexOf(row);
-
-            // Remove the item from itemRows array by index
-            itemRows.splice(itemIndex, 1);
-
-            // Remove the row from the DOM
-            row.remove();
-
-            const itemRowsContainer = document.getElementById('itemRows');
-            
-            // If no items remain, show the "Add a food to start your list" button
-            if (itemRows.length === 0 && !itemRowsContainer.querySelector('.btn-light')) {
-                const placeholder = document.createElement('button');
-                placeholder.classList.add('btn', 'btn-light');
-                placeholder.textContent = 'Add a food to start your list';
-                
-                // When clicked, add a new row to the itemRows
-                placeholder.onclick = function(event) {
-                    event.preventDefault(); // Prevent the default action (page reload or form submission)
-                    addItem(null); // Add a new item row on button click
-                    placeholder.remove(); // Remove the placeholder after clicking
-                };
-                itemRowsContainer.appendChild(placeholder);
             }
         }
 
@@ -305,49 +400,53 @@
                             throw new Error('list_id not found in response');
                         }
 
+                        // Create a new card with the SAME styling as existing cards
                         const newCard = document.createElement('div');
-                        newCard.classList.add('grocery-list-card');
+                        newCard.className = 'card grocery-list-card';
+                        newCard.style.borderRadius = '8px';
+                        newCard.style.border = '1px solid #ddd';
+                        newCard.style.width = '100%';
+                        newCard.style.maxWidth = '300px';
 
                         newCard.innerHTML = `
-                            <div class="card-header" style="cursor: pointer;" onclick="toggleCardBody(this)">
-                                <h5>${listName}</h5>
-                            </div>
-                            <div class="card-body" style="display: none;">
-                                <ul>
-                                    ${itemRows.map(item => `<li>${item.name} - ${item.type}</li>`).join('')}
-                                </ul>
-                                <!-- DELETE BUTTON WITH CORRECT list_id -->
-                                <form action="/delete_list/${result.list_id}" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this list?');">
-                                        Delete List
-                                    </button>
-                                </form>
-                            </div>
-                        `;
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleCardBody(this)">
+                        <h5>${listName}</h5>
+                    </div>
+                    <div class="card-body" style="display: none;">
+                        <ul>
+                            ${itemRows.map(item => `<li>${item.name} - ${item.type}</li>`).join('')}
+                        </ul>
+                        <form action="/delete_list/${result.list_id}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this list?');">
+                                Delete List
+                            </button>
+                        </form>
+                    </div>
+                `;
 
                         groceryLists.appendChild(newCard);
 
                         // Reset form and modal
                         document.getElementById('listForm').reset();
                         document.getElementById('itemRows').innerHTML = `
-                            <div class="item-row">
-                                <input type="text" class="form-control" placeholder="Item Name">
-                                <select class="form-select">
-                                    <option value="Fruits">Fruits</option>
-                                    <option value="Vegetables">Vegetables</option>
-                                    <option value="Dairy Products">Dairy Products</option>
-                                    <option value="Meat & Protein">Meat & Protein</option>
-                                    <option value="Snacks & Sweets">Snacks & Sweets</option>
-                                    <option value="Frozen Foods">Frozen Foods</option>
-                                    <option value="Beverages">Beverages</option>
-                                    <option value="Spices & Sauces">Spices & Sauces</option>
-                                    <option value="Health Foods & Supplements">Health Foods & Supplements</option>
-                                    <option value="Grains">Grains</option>
-                                </select>
-                                <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
-                                <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
-                            </div>
-                        `;
+                           <div class="item-row">
+                               <input type="text" class="form-control" placeholder="Item Name">
+                               <select class="form-select">
+                                   <option value="Fruits">Fruits</option>
+                                   <option value="Vegetables">Vegetables</option>
+                                   <option value="Dairy Products">Dairy Products</option>
+                                   <option value="Meat & Protein">Meat & Protein</option>
+                                   <option value="Snacks & Sweets">Snacks & Sweets</option>
+                                   <option value="Frozen Foods">Frozen Foods</option>
+                                   <option value="Beverages">Beverages</option>
+                                   <option value="Spices & Sauces">Spices & Sauces</option>
+                                   <option value="Health Foods & Supplements">Health Foods & Supplements</option>
+                                   <option value="Grains">Grains</option>
+                               </select>
+                               <button type="button" class="btn btn-success" onclick="addItem(this)">✔</button>
+                               <button type="button" class="btn btn-danger" onclick="removeItem(this)">✖</button>
+                           </div>
+                       `;
 
                         itemRows = [];
                         const modal = new bootstrap.Modal(document.getElementById('listModal'));
@@ -373,30 +472,143 @@
                 cardBody.style.display = 'none';
             }
         }
-        function generateRecipe() {
-            fetch('/generate_recipe', {method: 'POST'})
+
+        // Replace both generateCustomRecipe and autoGenerateRecipe functions with these versions:
+        function generateCustomRecipe() {
+            const dishName = document.getElementById('dishName').value;
+            const aiOutput = document.getElementById('ai-output');
+
+            if (!dishName.trim()) {
+                alert('Please enter a dish name!');
+                return;
+            }
+
+            // Clear previous content and show loading indicator
+            aiOutput.innerHTML = `
+        <div class="d-flex justify-content-center w-100 my-4">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-3">Generating recipe...</span>
+        </div>
+    `;
+
+            // Remove text-center class that's confining the width
+            aiOutput.className = 'p-3 w-100';
+
+            // Send the dish name to the backend
+            fetch('/custom_generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dishName: dishName })
+            })
                 .then(response => response.json())
                 .then(data => {
-                    let output = `<h3>${data.title}</h3>`;  // Add the title
-                    output += "<ul>";
+                    if (!data.title || !data.ingredients || !data.instructions) {
+                        aiOutput.innerHTML = '<div class="alert alert-danger w-100">Error: Incomplete recipe data.</div>';
+                        return;
+                    }
+
+                    // Create a full-width container for the recipe with optimized spacing
+                    let output = `
+            <div class="recipe-container w-100">
+                <h3 class="text-center mb-3">${data.title.trim()}</h3>
+                
+                <div class="ingredients-section mb-3">
+                    <h5 class="fw-bold mb-2">Ingredients:</h5>
+                    <ul class="ingredient-list ps-3 mb-3">
+        `;
+
                     data.ingredients.forEach(item => {
-                        output += `<li>${item.trim()}</li>`;  // Format each item as a bullet point
+                        if (item.trim()) {
+                            output += `<li class="mb-1">${item.trim()}</li>`;
+                        }
                     });
-                    output += "</ul>";
-                    output += `<p>${data.instructions}</p>`;  // Add the instructions
-                    document.getElementById('ai-output').innerHTML = output;
+
+                    output += `
+                    </ul>
+                </div>
+                
+                <div class="instructions-section">
+                    <h5 class="fw-bold mb-2">Instructions:</h5>
+                    <div class="instructions-text">${data.instructions.trim()}</div>
+                </div>
+            </div>
+        `;
+
+                    aiOutput.innerHTML = output;
                 })
                 .catch(error => {
                     console.error('Error generating recipe:', error);
-                    document.getElementById('ai-output').innerHTML = 'Error generating recipe. Please try again.';
+                    aiOutput.innerHTML = '<div class="alert alert-danger w-100">Error generating recipe. Please try again.</div>';
+                });
+        }
+
+        function autoGenerateRecipe() {
+            const aiOutput = document.getElementById('ai-output');
+
+            // Clear previous content and show loading indicator
+            aiOutput.innerHTML = `
+        <div class="d-flex justify-content-center w-100 my-4">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="ms-3">Generating recipe...</span>
+        </div>
+    `;
+
+            // Remove text-center class that's confining the width
+            aiOutput.className = 'p-3 w-100';
+
+            fetch('/generate_recipe', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.title || !data.ingredients || !data.instructions) {
+                        aiOutput.innerHTML = '<div class="alert alert-danger w-100">Error: Incomplete recipe data.</div>';
+                        return;
+                    }
+
+                    // Create a full-width container for the recipe with optimized spacing
+                    let output = `
+                <div class="recipe-container w-100">
+                    <h3 class="text-center mb-3">${data.title.trim()}</h3>
+                    
+                    <div class="ingredients-section mb-3">
+                        <h5 class="fw-bold mb-2">Ingredients:</h5>
+                        <ul class="ingredient-list ps-3 mb-3">
+            `;
+
+                    data.ingredients.forEach(item => {
+                        if (item.trim()) {
+                            output += `<li class="mb-1">${item.trim()}</li>`;
+                        }
+                    });
+
+                    output += `
+                        </ul>
+                    </div>
+                    
+                    <div class="instructions-section">
+                        <h5 class="fw-bold mb-2">Instructions:</h5>
+                        <div class="instructions-text">${data.instructions.trim()}</div>
+                    </div>
+                </div>
+            `;
+
+                    aiOutput.innerHTML = output;
+                })
+                .catch(error => {
+                    console.error('Error generating recipe:', error);
+                    aiOutput.innerHTML = '<div class="alert alert-danger w-100">Error generating recipe. Please try again.</div>';
                 });
         }
     </script>
 
-
-
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
 {% endblock %}
