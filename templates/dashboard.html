@@ -130,6 +130,28 @@ content %}
                             </div>
                         </div>
                     </div>
+
+                    <div class="card border-0 shadow-sm mt-4" style="border-radius: 12px; overflow: hidden">
+                        <div class="card-header" style="background-color: #4a7a50; padding: 15px 20px">
+                            <h2 class="m-0" style="font-size: 24px; color: white">Nutrient Analysis</h2>
+                        </div>
+                        <div class="card-body" style="padding: 2%;">
+                            <div class="row">
+                                <!-- Bar Chart Column -->
+                                <div class="col-md-6">
+                                    <h5 class="text-center mb-3">Nutrient Comparison</h5>
+                                    <div id="chart_div" style="width: 100%; height: 320px;"></div>
+                                </div>
+                                
+                                <!-- Pie Chart Column -->
+                                <div class="col-md-6">
+                                    <h5 class="text-center mb-3">Nutrient Breakdown</h5>
+                                    <div id="piechart" style="width: 100%; height: 320px;"></div>
+                                </div>
+                            
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -292,6 +314,8 @@ content %}
             </div>
         </div>
     </div>
+
+
 
     <script>
         // Initialize all toasts when the page loads
@@ -604,6 +628,96 @@ content %}
                     aiOutput.innerHTML = '<div class="alert alert-danger w-100">Error generating recipe. Please try again.</div>';
                 });
         }
+    </script>
+
+    <!-- Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Pie chart
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+
+            var data = google.visualization.arrayToDataTable([
+            ['Nutrients', 'Intake (grams)'],
+            ['Protein',      20],
+            ['Carbohydrates',  20],
+            ['Dietary fiber', 20],
+            ['Fats',    7]
+            ]);
+
+            var options = {
+                backgroundColor: 'transparent',
+                legend: {
+                    textStyle: {
+                        color: '#4e4136'  
+                    },
+                    position: 'bottom'
+                },
+                colors: [
+                    '#4a7a50', // Protein
+                    '#2e5233', // Carbohydrates
+                    '#a8c7a0', // Dietary fiber
+                    '#d4cabe'  // Fats
+                ],
+                chartArea: {
+                    backgroundColor: 'transparent',
+                    top: '5%',
+                    width: '90%',
+                    height: '75%'
+                    
+                },
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+            chart.draw(data, options);
+        }
+
+        // Bar
+        google.charts.load('current', {packages: ['corechart', 'bar']});
+        google.charts.setOnLoadCallback(drawMultSeries);
+
+        function drawMultSeries() {
+            var data = google.visualization.arrayToDataTable([
+                ['Nutrient', 'Your Intake', 'Recommended Intake'],
+                ['Protein', 30, 40],
+                ['Carbohydrates', 220, 225],
+                ['Dietary fiber', 13, 25],
+                ['Fats', 6, 11],
+            ]);
+
+            var options = {
+                hAxis: {
+                    minValue: 0,
+                    maxValue: 350,
+                    viewWindow: {
+                        max: 350
+                    },
+                    gridlines: {
+                        count: 7  
+                    }
+                },
+                colors: [
+                    '#d4cabe',
+                    '#4a7a50'
+                ],
+                chartArea: {
+                    top: '5%',
+                    width: '70%',
+                    height: '80%'
+                },
+                legend: {
+                    position: 'top'
+                },
+                backgroundColor: 'transparent'
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+            }
+
     </script>
 
     <!-- Bootstrap JS -->
