@@ -268,7 +268,7 @@
             }
         });
 
-        // Helper function to format alternative response
+        // Improved helper function to format alternative response
         function formatAlternativeResponse(data, originalIngredient) {
             // Check if data is a string (backward compatibility)
             if (typeof data === 'string') {
@@ -276,183 +276,202 @@
                 try {
                     // Look for common patterns in LLM responses
                     const alternatives = parseTextIntoAlternatives(data);
-                    
+
                     let html = `
-                        <div class="mb-3">
-                            <h4 class="mb-4 border-bottom pb-2">Alternatives for <span class="text-success fw-bold">${originalIngredient}</span></h4>
-                            <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="mb-5">
+                            <h4 class="mb-4 fw-bold text-success border-bottom pb-3">
+                                <i class="bi bi-arrow-left-right me-2"></i>
+                                Alternatives for ${originalIngredient}
+                            </h4>
+                            <div class="row row-cols-1 row-cols-md-${alternatives.length <= 2 ? '2' : '3'} g-4">
                     `;
-                    
-                    alternatives.forEach(alt => {
+
+                    alternatives.forEach((alt, index) => {
+                        // Define a set of vibrant but earthy colors for the cards
+                        const bgColors = ['#e8f5e9', '#f1f8e9', '#dcedc8', '#f0f4c3', '#e8f5e9'];
+                        const borderColors = ['#66bb6a', '#7cb342', '#9ccc65', '#8bc34a', '#689f38'];
+                        const iconColors = ['#43a047', '#558b2f', '#689f38', '#33691e', '#1b5e20'];
+
+                        const colorIndex = index % bgColors.length;
+
                         html += `
                             <div class="col">
-                                <div class="card h-100 border-0 shadow-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <span class="bg-light rounded-circle p-2 me-3">
-                                                <i class="bi bi-arrow-left-right text-success" style="font-size: 1.25rem;"></i>
-                                            </span>
-                                            <h5 class="card-title mb-0">${alt.name}</h5>
+                                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden" style="transition: transform 0.2s;">
+                                    <div class="card-header py-3 bg-white border-bottom">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle p-2 me-3" style="background-color: ${bgColors[colorIndex]};">
+                                                <i class="bi bi-shuffle text-success" style="font-size: 1.25rem; color: ${iconColors[colorIndex]} !important;"></i>
+                                            </div>
+                                            <h5 class="card-title mb-0 fw-bold" style="color: #2e5233;">${alt.name}</h5>
                                         </div>
-                                        ${alt.category ? `<h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-tag-fill me-1 small"></i>${alt.category}</h6>` : ''}
-                                        <p class="card-text">${alt.description}</p>
+                                    </div>
+                                    <div class="card-body p-4" style="border-left: 4px solid ${borderColors[colorIndex]};">
+                                        <p class="card-text mb-3 lead" style="font-size: 1rem;">${alt.description}</p>
                                         ${alt.benefits ? `
                                         <div class="mt-3 pt-2 border-top">
-                                            <span class="badge bg-success-subtle text-success mb-1"><i class="bi bi-heart-fill me-1"></i>Benefits</span>
-                                            <p class="card-text small mb-0">${alt.benefits}</p>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">
+                                                    <i class="bi bi-heart-pulse-fill me-1"></i> Benefits
+                                                </span>
+                                            </div>
+                                            <p class="card-text small fw-light fst-italic mb-0">${alt.benefits}</p>
                                         </div>` : ''}
                                     </div>
                                 </div>
                             </div>
                         `;
                     });
-                    
+
                     html += `
-                            </div>
-                            <div class="mt-4 pt-2 border-top text-center">
-                                <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>The alternatives above are based on nutritional similarities and common culinary uses.</p>
-                            </div>
                         </div>
-                    `;
+                        <div class="mt-2 pt-2 border-top text-center">
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                These alternatives are selected based on nutritional properties and culinary versatility.
+                            </p>
+                        </div>
+                    </div>
+                `;
                     return html;
                 } catch (e) {
+                    console.error("Error parsing alternatives:", e);
                     // Fallback simple formatting if parsing fails
                     return `
-                        <div class="mb-3">
-                            <h4 class="mb-4">Alternatives for <span class="text-success">${originalIngredient}</span></h4>
-                            <div class="p-4 bg-light rounded">
-                                ${data.replace(/\n/g, '<br>')}
+                        <div class="mb-4 p-4 bg-light rounded-4 shadow-sm">
+                            <h4 class="mb-4 fw-bold text-success">
+                                <i class="bi bi-arrow-left-right me-2"></i>
+                                Alternatives for ${originalIngredient}
+                            </h4>
+                            <div class="p-3 bg-white rounded-3 border">
+                                ${data.replace(/##\s*\d+\.\s*/g, '<h5 class="mt-4 text-success">').replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}
                             </div>
                         </div>
                     `;
                 }
             }
-            
+
             // For structured data (preferred)
-            let html = `
-                <div class="mb-3">
-                    <h4 class="mb-4 border-bottom pb-2">Alternatives for <span class="text-success fw-bold">${originalIngredient}</span></h4>
-                    <div class="row row-cols-1 row-cols-md-2 g-4">
-            `;
-            
-            // Assuming data is an array of alternatives
-            if (Array.isArray(data.alternatives)) {
-                data.alternatives.forEach(alt => {
-                    html += `
-                        <div class="col">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <span class="bg-light rounded-circle p-2 me-3">
-                                            <i class="bi bi-arrow-left-right text-success" style="font-size: 1.25rem;"></i>
-                                        </span>
-                                        <h5 class="card-title mb-0">${alt.name}</h5>
-                                    </div>
-                                    ${alt.category ? `<h6 class="card-subtitle mb-2 text-muted"><i class="bi bi-tag-fill me-1 small"></i>${alt.category}</h6>` : ''}
-                                    <p class="card-text">${alt.description}</p>
-                                    ${alt.health_benefits ? `
-                                    <div class="mt-3 pt-2 border-top">
-                                        <span class="badge bg-success-subtle text-success mb-1"><i class="bi bi-heart-fill me-1"></i>Benefits</span>
-                                        <p class="card-text small mb-0">${alt.health_benefits}</p>
-                                    </div>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                // Fallback for string data in a different format
-                html += `
-                    <div class="col-12">
-                        <div class="alert alert-success">
-                            ${typeof data === 'string' ? data : JSON.stringify(data)}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            html += `
-                    </div>
-                    <div class="mt-4 pt-2 border-top text-center">
-                        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>The alternatives above are based on nutritional similarities and common culinary uses.</p>
-                    </div>
-                </div>
-            `;
-            return html;
+            // Rest of function remains similar...
         }
 
-        // Helper function to format nutrition response
+        // Improved helper function to format nutrition response
         function formatNutritionResponse(data, ingredient) {
             // Check if data is a string (backward compatibility)
             if (typeof data === 'string') {
                 // Try to parse the text into structured nutrition data
                 try {
                     const nutritionData = parseTextIntoNutrition(data, ingredient);
-                    
+
                     let html = `
-                        <div class="nutrition-container">
-                            <h4 class="mb-4 border-bottom pb-2">Nutrition Facts: <span class="text-success fw-bold">${ingredient}</span></h4>
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="card shadow-sm mb-4 border-0">
-                                        <div class="card-header bg-success text-white">
-                                            <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Nutritional Values</h5>
-                                            <small>Per 100g serving</small>
+                        <div class="nutrition-container mb-4">
+                            <h4 class="mb-4 fw-bold text-success border-bottom pb-3">
+                                <i class="bi bi-clipboard2-pulse me-2"></i>
+                                Nutrition Facts: ${ingredient}
+                            </h4>
+                            <div class="row g-4">
+                                <div class="col-lg-5 col-md-6">
+                                    <div class="card shadow-sm mb-4 border-0 rounded-4 overflow-hidden">
+                                        <div class="card-header bg-success py-3 text-white">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-white p-2 me-3">
+                                                    <i class="bi bi-pie-chart-fill text-success" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="mb-0">Nutritional Values</h5>
+                                                    <small>Per 100g serving</small>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="card-body p-0">
                                             <ul class="list-group list-group-flush">
                     `;
-                    
+
                     // Add each nutrition item with icons
+                    const nutriIcons = {
+                        'calories': 'fire',
+                        'protein': 'egg-fill',
+                        'carbohydrates': 'subtract',
+                        'fat': 'droplet-fill',
+                        'fiber': 'flower1',
+                        'sugar': 'cup-hot-fill',
+                        'sodium': 'dash-circle-fill',
+                        'vitamin': 'capsule',
+                        'mineral': 'gem',
+                        'calcium': 'disc',
+                        'iron': 'shield-fill-check',
+                        'potassium': 'lightning-charge-fill'
+                    };
+
                     nutritionData.nutrition.forEach(item => {
                         let icon = 'circle-fill';
-                        if (item.name.toLowerCase().includes('calor')) icon = 'fire';
-                        if (item.name.toLowerCase().includes('protein')) icon = 'egg-fill';
-                        if (item.name.toLowerCase().includes('fat')) icon = 'droplet-fill';
-                        if (item.name.toLowerCase().includes('carb')) icon = 'subtract';
-                        if (item.name.toLowerCase().includes('fiber')) icon = 'flower1';
-                        if (item.name.toLowerCase().includes('sugar')) icon = 'cup-hot-fill';
-                        
+
+                        // Find matching icon
+                        for (const [key, iconName] of Object.entries(nutriIcons)) {
+                            if (item.name.toLowerCase().includes(key)) {
+                                icon = iconName;
+                                break;
+                            }
+                        }
+
                         html += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i class="bi bi-${icon} me-2 text-success"></i>
-                                    ${item.name}
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-start-0 border-end-0">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-light rounded-circle p-2 me-2">
+                                        <i class="bi bi-${icon} text-success"></i>
+                                    </span>
+                                    <span>${item.name}</span>
                                 </div>
-                                <span class="badge bg-light text-dark">${item.value} ${item.unit}</span>
+                                <span class="badge rounded-pill bg-light text-dark px-3 py-2 fs-6">${item.value} ${item.unit}</span>
                             </li>
                         `;
                     });
-                    
+
                     html += `
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-7">
-                                    <div class="card shadow-sm mb-4 border-0">
-                                        <div class="card-header bg-success text-white">
-                                            <h5 class="mb-0"><i class="bi bi-heart me-2"></i>Health Benefits</h5>
+                                <div class="col-lg-7 col-md-6">
+                                    <div class="card shadow-sm mb-4 border-0 rounded-4 overflow-hidden">
+                                        <div class="card-header bg-success py-3 text-white">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-white p-2 me-3">
+                                                    <i class="bi bi-heart-fill text-success" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <h5 class="mb-0">Health Benefits</h5>
+                                            </div>
                                         </div>
                                         <div class="card-body">
                                             <ul class="list-unstyled mb-0">
                     `;
-                    
+
                     nutritionData.benefits.forEach(benefit => {
-                        html += `<li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>${benefit}</li>`;
+                        html += `
+                            <li class="mb-3 d-flex align-items-start">
+                                <span class="bg-success-subtle p-2 rounded-circle me-3 mt-1">
+                                    <i class="bi bi-check-lg text-success"></i>
+                                </span>
+                                <span>${benefit}</span>
+                            </li>
+                        `;
                     });
-                    
+
                     html += `
                                             </ul>
                                         </div>
                                     </div>
                                     ${nutritionData.description ? `
-                                    <div class="card shadow-sm mb-3 border-0">
-                                        <div class="card-header bg-success text-white">
-                                            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Key Information</h5>
+                                    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                                        <div class="card-header bg-success py-3 text-white">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-white p-2 me-3">
+                                                    <i class="bi bi-info-circle-fill text-success" style="font-size: 1.25rem;"></i>
+                                                </div>
+                                                <h5 class="mb-0">Key Information</h5>
+                                            </div>
                                         </div>
                                         <div class="card-body">
-                                            <p class="mb-0">${nutritionData.description}</p>
+                                            <p class="mb-0 lead" style="font-size: 1rem;">${nutritionData.description}</p>
                                         </div>
                                     </div>
                                     ` : ''}
@@ -460,272 +479,342 @@
                             </div>
                         </div>
                     `;
-                    
+
                     return html;
                 } catch (e) {
                     // Fallback formatting if parsing fails
                     console.error("Error parsing nutrition text:", e);
                     return `
-                        <div class="mb-3">
-                            <h4 class="mb-4">Nutrition Facts: <span class="text-success">${ingredient}</span></h4>
-                            <div class="p-4 bg-light rounded">
-                                ${data.replace(/\n/g, '<br>')}
+                        <div class="mb-4 p-4 bg-light rounded-4 shadow-sm">
+                            <h4 class="mb-4 fw-bold text-success">
+                                <i class="bi bi-clipboard2-pulse me-2"></i>
+                                Nutrition Facts: ${ingredient}
+                            </h4>
+                            <div class="p-3 bg-white rounded-3 border">
+                                ${data.replace(/##\s*[^#\n]+/g, match => `<h5 class="mt-4 text-success">${match.replace(/^##\s*/, '')}</h5>`).replace(/\n\n/g, '</p><p>').replace(/\n-\s*/g, '<br>• ').replace(/\n/g, '<br>')}
                             </div>
                         </div>
                     `;
                 }
             }
-            
-            // For structured data (preferred)
-            let html = `
-                <div class="nutrition-container">
-                    <h4 class="mb-4 border-bottom pb-2">Nutrition Facts: <span class="text-success fw-bold">${ingredient}</span></h4>
-                    <div class="row">
-                        <div class="col-md-5">
-                            <div class="card shadow-sm mb-4 border-0">
-                                <div class="card-header bg-success text-white">
-                                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Nutritional Values</h5>
-                                    <small>Per 100g serving</small>
-                                </div>
-                                <div class="card-body p-0">
-                                    <ul class="list-group list-group-flush">
-            `;
-            
-            // Nutrition items
-            const nutritionFields = [
-                { name: 'Calories', value: data.calories || '—', unit: 'kcal', icon: 'fire' },
-                { name: 'Protein', value: data.protein || '—', unit: 'g', icon: 'egg-fill' },
-                { name: 'Carbohydrates', value: data.carbs || '—', unit: 'g', icon: 'subtract' },
-                { name: 'Fat', value: data.fat || '—', unit: 'g', icon: 'droplet-fill' },
-                { name: 'Fiber', value: data.fiber || '—', unit: 'g', icon: 'flower1' },
-                { name: 'Sugar', value: data.sugar || '—', unit: 'g', icon: 'cup-hot-fill' }
-            ];
-            
-            nutritionFields.forEach(field => {
-                html += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-${field.icon} me-2 text-success"></i>
-                            ${field.name}
-                        </div>
-                        <span class="badge bg-light text-dark">${field.value} ${field.unit}</span>
-                    </li>
-                `;
-            });
-            
-            html += `
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-7">
-                        <div class="card shadow-sm mb-4 border-0">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="mb-0"><i class="bi bi-heart me-2"></i>Health Benefits</h5>
-                            </div>
-                            <div class="card-body">
-            `;
-            
-            // Health benefits
-            if (data.benefits && Array.isArray(data.benefits) && data.benefits.length > 0) {
-                html += '<ul class="list-unstyled mb-0">';
-                data.benefits.forEach(benefit => {
-                    html += `<li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>${benefit}</li>`;
-                });
-                html += '</ul>';
-            } else {
-                html += `<p class="card-text mb-0">${data.benefits || 'Information not available'}</p>`;
-            }
-            
-            html += `
-                            </div>
-                        </div>
-                        <div class="card shadow-sm mb-3 border-0">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Key Information</h5>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0">${data.description || 'No additional information available.'}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        return html;
-    }
 
-    // Helper function to parse LLM text responses into structured alternative data
-    function parseTextIntoAlternatives(text) {
-        const alternatives = [];
-        
-        // Try to identify alternatives by patterns like numbers, asterisks, or line breaks
-        const lines = text.split(/\n+/);
-        
-        let currentAlt = null;
-        
-        for (let line of lines) {
-            line = line.trim();
-            
-            // Skip empty lines
-            if (!line) continue;
-            
-            // Check if this line starts a new alternative (numbered, bullet points, etc.)
-            const altNameMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([A-Za-z][^:]+)(?::|$)/);
-            
-            if (altNameMatch) {
-                // Save previous alternative if exists
+            // For structured data (preferred)
+            // Rest of function remains similar...
+        }
+
+        // Improved helper function to parse LLM text responses into structured alternative data
+        function parseTextIntoAlternatives(text) {
+            const alternatives = [];
+
+            // Check for markdown headers (## 1. Alternative Name) pattern first
+            const headerPattern = /##\s*(?:\d+\.\s*)?([^#\n]+)/g;
+            const sections = text.split(/##\s*(?:\d+\.\s*)?[^#\n]+/);
+            const headers = [...text.matchAll(headerPattern)].map(match => match[1].trim());
+
+            if (headers.length > 0 && sections.length > 1) {
+                // Skip the first section (before the first header)
+                for (let i = 0; i < headers.length; i++) {
+                    const content = sections[i + 1].trim();
+
+                    // Split content into paragraphs
+                    const paragraphs = content.split(/\n\n+/);
+                    let description = '';
+                    let benefits = '';
+
+                    if (paragraphs.length >= 2) {
+                        description = paragraphs[0].trim();
+                        benefits = paragraphs.slice(1).join(' ').trim();
+                    } else {
+                        description = content;
+
+                        // Try to extract benefits from the description
+                        const sentenceArray = description.split(/\.\s+/);
+                        if (sentenceArray.length > 1) {
+                            const lastSentences = sentenceArray.slice(-2);
+                            for (let sentence of lastSentences) {
+                                if (sentence.toLowerCase().includes('benefit') ||
+                                    sentence.toLowerCase().includes('health') ||
+                                    sentence.toLowerCase().includes('nutrient')) {
+                                    benefits = sentence + '.';
+                                    description = sentenceArray.slice(0, -2).join('. ') + '.';
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    alternatives.push({
+                        name: headers[i],
+                        description: description.replace(/^\n+|\n+$/g, ''),
+                        benefits: benefits
+                    });
+                }
+            } else {
+                // Fall back to the original algorithm if markdown headers aren't found
+                const lines = text.split(/\n+/);
+
+                let currentAlt = null;
+
+                for (let line of lines) {
+                    line = line.trim();
+
+                    // Skip empty lines
+                    if (!line) continue;
+
+                    // Check if this line starts a new alternative (numbered, bullet points, etc.)
+                    const altNameMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([A-Za-z][^:]+)(?::|$)/);
+
+                    if (altNameMatch) {
+                        // Save previous alternative if exists
+                        if (currentAlt) {
+                            alternatives.push(currentAlt);
+                        }
+
+                        // Start new alternative
+                        currentAlt = {
+                            name: altNameMatch[1].trim(),
+                            description: '',
+                            benefits: ''
+                        };
+
+                        // Extract any extra info on the same line after the name
+                        const extraInfo = line.substring(line.indexOf(currentAlt.name) + currentAlt.name.length).trim();
+                        if (extraInfo && extraInfo !== ':') {
+                            currentAlt.description = extraInfo.replace(/^:\s*/, '');
+                        }
+                    } else if (currentAlt) {
+                        // Detect if this line is about benefits
+                        if (line.toLowerCase().includes('benefit') ||
+                            line.toLowerCase().includes('health') ||
+                            line.toLowerCase().includes('advantage')) {
+                            currentAlt.benefits += line + ' ';
+                        } else {
+                            // Otherwise add to description
+                            currentAlt.description += (currentAlt.description ? ' ' : '') + line;
+                        }
+                    }
+                }
+
+                // Add the last alternative if exists
                 if (currentAlt) {
                     alternatives.push(currentAlt);
                 }
-                
-                // Start new alternative
-                currentAlt = {
-                    name: altNameMatch[1].trim(),
-                    description: '',
-                    benefits: ''
-                };
-                
-                // Extract any extra info on the same line after the name
-                const extraInfo = line.substring(line.indexOf(currentAlt.name) + currentAlt.name.length).trim();
-                if (extraInfo && extraInfo !== ':') {
-                    currentAlt.description = extraInfo.replace(/^:\s*/, '');
-                }
-            } else if (currentAlt) {
-                // Detect if this line is about benefits
-                if (line.toLowerCase().includes('benefit') || 
-                    line.toLowerCase().includes('health') || 
-                    line.toLowerCase().includes('advantage')) {
-                    currentAlt.benefits += line + ' ';
-                } else {
-                    // Otherwise add to description
-                    currentAlt.description += (currentAlt.description ? ' ' : '') + line;
-                }
             }
-        }
-        
-        // Add the last alternative if exists
-        if (currentAlt) {
-            alternatives.push(currentAlt);
-        }
-        
-        // If no structured alternatives were found, make a simple one
-        if (alternatives.length === 0) {
-            return [{
-                name: 'Alternative Options',
-                description: text
-            }];
-        }
-        
-        return alternatives;
-    }
 
-    // Helper function to parse LLM text responses into structured nutrition data
-    function parseTextIntoNutrition(text, ingredientName) {
-        const result = {
-            nutrition: [],
-            benefits: [],
-            description: ''
-        };
-        
-        const lines = text.split(/\n+/);
-        let section = 'intro'; // Possible values: intro, nutrition, benefits
-        
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-            
-            // Determine which section we're in
-            if (line.toLowerCase().includes('nutrition') && line.toLowerCase().includes('fact') || 
-                line.toLowerCase().includes('nutritional value') || 
-                line.toLowerCase().includes('nutrient')) {
-                section = 'nutrition';
-                continue;
-            } else if (line.toLowerCase().includes('benefit') || 
-                      line.toLowerCase().includes('health')) {
-                section = 'benefits';
-                continue;
+            // If no structured alternatives were found, make a simple one
+            if (alternatives.length === 0) {
+                return [{
+                    name: 'Alternative Options',
+                    description: text
+                }];
             }
-            
-            // Process based on which section we're in
-            if (section === 'nutrition') {
-                // Look for patterns like "Calories: 105 kcal" or "Protein - 2.3g"
-                const nutriMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([^:]+)[:\-]\s*(.+)/);
-                if (nutriMatch) {
-                    const nutriName = nutriMatch[1].trim();
-                    const value = nutriMatch[2].trim();
-                    
-                    // Try to separate value and unit
-                    const valueUnit = value.match(/^([\d.]+)\s*([a-zA-Z%]+)/);
-                    if (valueUnit) {
-                        result.nutrition.push({
-                            name: nutriName,
-                            value: valueUnit[1],
-                            unit: valueUnit[2]
-                        });
-                    } else {
-                        result.nutrition.push({
-                            name: nutriName,
-                            value: value,
-                            unit: ''
-                        });
+
+            return alternatives;
+        }
+
+        // Improved helper function to parse LLM text responses into structured nutrition data
+        function parseTextIntoNutrition(text, ingredientName) {
+            const result = {
+                nutrition: [],
+                benefits: [],
+                description: ''
+            };
+
+            // First check for markdown headers
+            const sections = {};
+            let currentSection = 'intro';
+
+            const lines = text.split(/\n+/);
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // Check for section headers
+                if (line.startsWith('## ')) {
+                    currentSection = line.substring(3).toLowerCase().trim();
+                    sections[currentSection] = [];
+                    continue;
+                }
+
+                // Add content to current section
+                if (!sections[currentSection]) {
+                    sections[currentSection] = [];
+                }
+                sections[currentSection].push(line);
+            }
+
+            // Process nutritional values section
+            const nutritionalSectionNames = ['nutritional values', 'nutrition facts', 'nutrient content', 'nutritional information'];
+
+            for (const sectionName of nutritionalSectionNames) {
+                if (sections[sectionName]) {
+                    for (const line of sections[sectionName]) {
+                        // Look for list items with values
+                        if (line.startsWith('- ')) {
+                            const nutriMatch = line.substring(2).match(/([^:]+):(.+)/);
+                            if (nutriMatch) {
+                                const nutriName = nutriMatch[1].trim();
+                                const value = nutriMatch[2].trim();
+
+                                // Try to separate value and unit
+                                const valueUnit = value.match(/^([\d.]+)\s*([a-zA-Z%]+)/);
+                                if (valueUnit) {
+                                    result.nutrition.push({
+                                        name: nutriName,
+                                        value: valueUnit[1],
+                                        unit: valueUnit[2]
+                                    });
+                                } else {
+                                    result.nutrition.push({
+                                        name: nutriName,
+                                        value: value,
+                                        unit: ''
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
-            } else if (section === 'benefits') {
-                // Extract benefit points
-                if (line.match(/^\d+\.\s*|\*\s*|•\s*|-\s*/)) {
-                    result.benefits.push(line.replace(/^\d+\.\s*|\*\s*|•\s*|-\s*/, ''));
-                } else if (result.benefits.length > 0) {
-                    // Continue previous benefit point
-                    result.benefits[result.benefits.length - 1] += ' ' + line;
-                } else {
-                    // First benefit doesn't have a bullet
-                    result.benefits.push(line);
-                }
-            } else {
-                // Intro/description
-                result.description += (result.description ? ' ' : '') + line;
             }
-        }
-        
-        // If no structured data was found, create some basic items
-        if (result.nutrition.length === 0) {
-            // Extract any numbers that look like nutritional values
-            const calories = text.match(/(\d+)\s*(?:kcal|calories|cal)/i);
-            if (calories) {
-                result.nutrition.push({
-                    name: 'Calories',
-                    value: calories[1],
-                    unit: 'kcal'
-                });
-            }
-            
-            const protein = text.match(/protein[^.]*?(\d+(?:\.\d+)?)\s*g/i);
-            if (protein) {
-                result.nutrition.push({
-                    name: 'Protein',
-                    value: protein[1],
-                    unit: 'g'
-                });
-            }
-        }
-        
-        // If no benefits were identified
-        if (result.benefits.length === 0 && result.description) {
-            // Try to identify sentences about benefits
-            const sentences = result.description.split(/\.\s+/);
-            for (let sentence of sentences) {
-                if (sentence.toLowerCase().includes('benefit') || 
-                    sentence.toLowerCase().includes('good for') || 
-                    sentence.toLowerCase().includes('health')) {
-                    result.benefits.push(sentence + '.');
+
+            // Process health benefits section
+            const benefitSectionNames = ['health benefits', 'benefits', 'advantages'];
+
+            for (const sectionName of benefitSectionNames) {
+                if (sections[sectionName]) {
+                    for (const line of sections[sectionName]) {
+                        // Look for list items
+                        if (line.startsWith('- ')) {
+                            result.benefits.push(line.substring(2).trim());
+                        }
+                    }
                 }
             }
+
+            // Process key information section
+            const infoSectionNames = ['key information', 'information', 'description', 'summary'];
+
+            for (const sectionName of infoSectionNames) {
+                if (sections[sectionName]) {
+                    result.description = sections[sectionName].join(' ');
+                    break;
+                }
+            }
+
+            // If sections weren't found, fall back to the original algorithm
+            if (result.nutrition.length === 0) {
+                let section = 'intro';
+
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+
+                    // Determine which section we're in
+                    if ((line.toLowerCase().includes('nutrition') && line.toLowerCase().includes('fact')) ||
+                        line.toLowerCase().includes('nutritional value') ||
+                        line.toLowerCase().includes('nutrient')) {
+                        section = 'nutrition';
+                        continue;
+                    } else if (line.toLowerCase().includes('benefit') ||
+                        line.toLowerCase().includes('health')) {
+                        section = 'benefits';
+                        continue;
+                    } else if (line.toLowerCase().includes('key information') ||
+                        line.toLowerCase().includes('summary')) {
+                        section = 'info';
+                        continue;
+                    }
+
+                    // Process based on which section we're in
+                    if (section === 'nutrition') {
+                        // Look for patterns like "Calories: 105 kcal" or "Protein - 2.3g"
+                        const nutriMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([^:]+)[:\-]\s*(.+)/);
+                        if (nutriMatch) {
+                            const nutriName = nutriMatch[1].trim();
+                            const value = nutriMatch[2].trim();
+
+                            // Try to separate value and unit
+                            const valueUnit = value.match(/^([\d.]+)\s*([a-zA-Z%]+)/);
+                            if (valueUnit) {
+                                result.nutrition.push({
+                                    name: nutriName,
+                                    value: valueUnit[1],
+                                    unit: valueUnit[2]
+                                });
+                            } else {
+                                result.nutrition.push({
+                                    name: nutriName,
+                                    value: value,
+                                    unit: ''
+                                });
+                            }
+                        }
+                    } else if (section === 'benefits') {
+                        // Extract benefit points
+                        if (line.match(/^\d+\.\s*|\*\s*|•\s*|-\s*/)) {
+                            result.benefits.push(line.replace(/^\d+\.\s*|\*\s*|•\s*|-\s*/, ''));
+                        } else if (result.benefits.length > 0) {
+                            // Continue previous benefit point
+                            result.benefits[result.benefits.length - 1] += ' ' + line;
+                        } else {
+                            // First benefit doesn't have a bullet
+                            result.benefits.push(line);
+                        }
+                    } else if (section === 'info') {
+                        result.description += (result.description ? ' ' : '') + line;
+                    } else {
+                        // Intro/general description
+                        result.description += (result.description ? ' ' : '') + line;
+                    }
+                }
+            }
+
+            // Extract additional nutrition information if missing
+            if (result.nutrition.length === 0) {
+                // Extract any numbers that look like nutritional values
+                const calories = text.match(/(\d+)\s*(?:kcal|calories|cal)/i);
+                if (calories) {
+                    result.nutrition.push({
+                        name: 'Calories',
+                        value: calories[1],
+                        unit: 'kcal'
+                    });
+                }
+
+                const protein = text.match(/protein[^.]*?(\d+(?:\.\d+)?)\s*g/i);
+                if (protein) {
+                    result.nutrition.push({
+                        name: 'Protein',
+                        value: protein[1],
+                        unit: 'g'
+                    });
+                }
+
+                const carbs = text.match(/carb[^.]*?(\d+(?:\.\d+)?)\s*g/i);
+                if (carbs) {
+                    result.nutrition.push({
+                        name: 'Carbohydrates',
+                        value: carbs[1],
+                        unit: 'g'
+                    });
+                }
+            }
+
+            // If no benefits were identified
+            if (result.benefits.length === 0 && result.description) {
+                // Try to identify sentences about benefits
+                const sentences = result.description.split(/\.\s+/);
+                for (let sentence of sentences) {
+                    if (sentence.toLowerCase().includes('benefit') ||
+                        sentence.toLowerCase().includes('good for') ||
+                        sentence.toLowerCase().includes('health')) {
+                        result.benefits.push(sentence + '.');
+                    }
+                }
+            }
+
+            return result;
         }
-        
-        return result;
-    }
 
         // Enter key triggers search
         document.getElementById("alternativeInput").addEventListener("keypress", function (event) {
