@@ -8,6 +8,7 @@ import time
 import json
 from dotenv import load_dotenv
 import os
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key'
@@ -317,6 +318,14 @@ def logout():
     flash('Logged out.', 'info')  # Flash only the logout message
     return redirect(url_for('login'))
 
+def apiParse():
+    key = os.getenv('USDA_API_KEY')
+    if key is None:
+        raise ValueError("USDA_API_KEY not set in environment variables.")
+    url = f"https://api.nal.usda.gov/fdc/v1/foods/search?api_key={key}&query=apple"
+    response = requests.get(url)
+    print(response)
+    
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Ensure the database is created
