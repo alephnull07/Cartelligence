@@ -324,11 +324,14 @@
 
                     html += `
                         </div>
-                        <div class="mt-2 pt-2 border-top text-center">
-                            <p class="text-muted small mb-0">
-                                <i class="bi bi-info-circle me-1"></i>
-                                These alternatives are selected based on nutritional properties and culinary versatility.
-                            </p>
+                        <div class="mt-4 p-3 rounded-4 bg-success bg-opacity-10 shadow-sm">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-lightbulb-fill text-success me-3 mt-1 fs-5"></i>
+                                <div>
+                                    <p class="fw-medium text-success mb-1">Cooking Tip</p>
+                                    <p class="mb-0 small">These alternatives are carefully selected based on nutritional profile and flavor compatibility. Quantities may need adjustment when substituting.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -446,12 +449,18 @@
                     `;
 
                     nutritionData.benefits.forEach(benefit => {
+                        // Final cleaning to ensure no asterisks or other unwanted characters
+                        const cleanBenefit = benefit
+                            .replace(/\*/g, '')
+                            .replace(/^\s*-\s*|\s*•\s*|\s*\d+\.\s*/g, '')
+                            .trim();
+                        
                         html += `
                             <li class="mb-3 d-flex align-items-start">
                                 <span class="bg-success-subtle p-2 rounded-circle me-3 mt-1">
                                     <i class="bi bi-check-lg text-success"></i>
                                 </span>
-                                <span>${benefit}</span>
+                                <span>${cleanBenefit}</span>
                             </li>
                         `;
                     });
@@ -506,114 +515,282 @@
         function parseTextIntoAlternatives(text) {
             const alternatives = [];
 
-            // Check for markdown headers (## 1. Alternative Name) pattern first
-            const headerPattern = /##\s*(?:\d+\.\s*)?([^#\n]+)/g;
-            const sections = text.split(/##\s*(?:\d+\.\s*)?[^#\n]+/);
-            const headers = [...text.matchAll(headerPattern)].map(match => match[1].trim());
+            // Clean up markdown and other symbols from the text
+            text = text
+                .replace(/\*\*/g, '')     // Remove bold markdown
+                .replace(/\*/g, '')       // Remove asterisks/italic markdown
+                .replace(/^##+\s*/gm, '') // Remove heading markers
+                .trim();
 
-            if (headers.length > 0 && sections.length > 1) {
-                // Skip the first section (before the first header)
-                for (let i = 0; i < headers.length; i++) {
-                    const content = sections[i + 1].trim();
+            // First check for clearly structured alternatives with headings or numbers
+            const alternativePatterns = [
+                /(?:^|\n)(?:\d+\.)\s*([A-Za-z][^:\n]+)(?::|–|-)?\s*/g,       // Numbered items: 1. Product Name
+                /(?:^|\n)(?:•|-)\s+([A-Za-z][^:\n]+)(?::|–|-)?\s*/g,         // Bullet points: • Product Name or - Product Name
+                /(?:^|\n)([A-Za-z][^:\n]{3,50})(?::|–|-)\s*/g               // Product Name: description
+            ];
 
-                    // Split content into paragraphs
-                    const paragraphs = content.split(/\n\n+/);
-                    let description = '';
-                    let benefits = '';
+            let foundAlternatives = false;
 
-                    if (paragraphs.length >= 2) {
-                        description = paragraphs[0].trim();
-                        benefits = paragraphs.slice(1).join(' ').trim();
-                    } else {
-                        description = content;
+            // Try each pattern to find alternatives
+            for (let pattern of alternativePatterns) {
+                const matches = [...text.matchAll(pattern)];
 
-                        // Try to extract benefits from the description
-                        const sentenceArray = description.split(/\.\s+/);
-                        if (sentenceArray.length > 1) {
-                            const lastSentences = sentenceArray.slice(-2);
-                            for (let sentence of lastSentences) {
-                                if (sentence.toLowerCase().includes('benefit') ||
-                                    sentence.toLowerCase().includes('health') ||
-                                    sentence.toLowerCase().includes('nutrient')) {
-                                    benefits = sentence + '.';
-                                    description = sentenceArray.slice(0, -2).join('. ') + '.';
+                if (matches.length > 0) {
+                    foundAlternatives = true;
+
+                    // Process each match as an alternative
+                    for (let i = 0; i < matches.length; i++) {
+                        // Clean and format the product name
+                        const productName = matches[i][1].trim()
+                            .replace(/[\*#]/g, '')     // Remove any remaining * and # characters
+                            .replace(/\s+/g, ' ')     // Normalize whitespace
+                            .trim();
+
+                        // Find where this match starts and the next one begins
+                        const startPos = matches[i].index + matches[i][0].length;
+                        const endPos = (i < matches.length - 1) ? matches[i+1].index : text.length;
+
+                        // Extract the content for this alternative
+                        let content = text.substring(startPos, endPos).trim();
+
+                        // Process the content to extract description and benefits
+                        let description = '';
+                        let benefits = '';
+
+                        // Look for benefits section - search for common markers
+                        const benefitMarkers = [
+                            'Benefits:', 'Benefits include:', 'Health benefits:',
+                            'Advantages:', 'Health advantages:', 'Benefits of'
+                        ];
+
+                        let benefitsStart = -1;
+
+                        for (const marker of benefitMarkers) {
+                            const index = content.indexOf(marker);
+                            if (index !== -1) {
+                                benefitsStart = index;
+                                break;
+                            }
+                        }
+
+                        // If we found a benefits marker, split the content
+                        if (benefitsStart !== -1) {
+                            description = content.substring(0, benefitsStart).trim();
+                            benefits = content.substring(benefitsStart).trim();
+
+                            // Remove the benefits marker from the benefits text
+                            for (const marker of benefitMarkers) {
+                                if (benefits.startsWith(marker)) {
+                                    benefits = benefits.substring(marker.length).trim();
                                     break;
                                 }
                             }
-                        }
-                    }
-
-                    alternatives.push({
-                        name: headers[i],
-                        description: description.replace(/^\n+|\n+$/g, ''),
-                        benefits: benefits
-                    });
-                }
-            } else {
-                // Fall back to the original algorithm if markdown headers aren't found
-                const lines = text.split(/\n+/);
-
-                let currentAlt = null;
-
-                for (let line of lines) {
-                    line = line.trim();
-
-                    // Skip empty lines
-                    if (!line) continue;
-
-                    // Check if this line starts a new alternative (numbered, bullet points, etc.)
-                    const altNameMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([A-Za-z][^:]+)(?::|$)/);
-
-                    if (altNameMatch) {
-                        // Save previous alternative if exists
-                        if (currentAlt) {
-                            alternatives.push(currentAlt);
-                        }
-
-                        // Start new alternative
-                        currentAlt = {
-                            name: altNameMatch[1].trim(),
-                            description: '',
-                            benefits: ''
-                        };
-
-                        // Extract any extra info on the same line after the name
-                        const extraInfo = line.substring(line.indexOf(currentAlt.name) + currentAlt.name.length).trim();
-                        if (extraInfo && extraInfo !== ':') {
-                            currentAlt.description = extraInfo.replace(/^:\s*/, '');
-                        }
-                    } else if (currentAlt) {
-                        // Detect if this line is about benefits
-                        if (line.toLowerCase().includes('benefit') ||
-                            line.toLowerCase().includes('health') ||
-                            line.toLowerCase().includes('advantage')) {
-                            currentAlt.benefits += line + ' ';
                         } else {
-                            // Otherwise add to description
-                            currentAlt.description += (currentAlt.description ? ' ' : '') + line;
-                        }
-                    }
-                }
+                            // If no explicit benefits section, check for benefit keywords in sentences
+                            const sentences = content.split(/\.\s+/);
+                            const descriptionSentences = [];
+                            const benefitSentences = [];
 
-                // Add the last alternative if exists
-                if (currentAlt) {
-                    alternatives.push(currentAlt);
+                            for (const sentence of sentences) {
+                                const lowerSentence = sentence.toLowerCase();
+                                if (lowerSentence.includes('benefit') || 
+                                    lowerSentence.includes('advantage') || 
+                                    lowerSentence.includes('good for') || 
+                                    lowerSentence.includes('health benefit') ||
+                                    lowerSentence.includes('rich in')) {
+                                    benefitSentences.push(sentence);
+                                } else {
+                                    descriptionSentences.push(sentence);
+                                }
+                            }
+
+                            if (benefitSentences.length > 0) {
+                                benefits = benefitSentences.join('. ');
+                                if (!benefits.endsWith('.')) benefits += '.';
+
+                                description = descriptionSentences.join('. ');
+                                if (!description.endsWith('.') && description.length > 0) description += '.';
+                            } else {
+                                description = content;
+                            }
+                        }
+
+                        // Final cleanup of description and benefits
+                        description = description
+                            .replace(/^\s*-\s*/, '')   // Remove leading dashes
+                            .replace(/^\s*•\s*/, '')   // Remove leading bullets
+                            .replace(/^\s*\d+\.\s*/, '') // Remove leading numbers
+                            .trim();
+
+                        benefits = benefits
+                            .replace(/^\s*-\s*/, '')   // Remove leading dashes
+                            .replace(/^\s*•\s*/, '')   // Remove leading bullets
+                            .replace(/^\s*\d+\.\s*/, '') // Remove leading numbers
+                            .trim();
+
+                        // Add to alternatives array
+                        alternatives.push({
+                            name: toTitleCase(productName),
+                            description: description,
+                            benefits: benefits
+                        });
+                    }
+
+                    // We found alternatives, no need to try other patterns
+                    break;
                 }
             }
 
-            // If no structured alternatives were found, make a simple one
+            // If no structured alternatives were found, try a different approach
+            if (!foundAlternatives) {
+                // Try to split by empty lines (paragraphs)
+                const paragraphs = text.split(/\n\s*\n/);
+
+                // If we have multiple paragraphs, each might be an alternative
+                if (paragraphs.length > 1) {
+                    for (const paragraph of paragraphs) {
+                        if (!paragraph.trim()) continue;
+
+                        const lines = paragraph.split(/\n/);
+                        let name = '';
+                        let content = '';
+
+                        // First line might contain the name
+                        if (lines.length > 0) {
+                            const firstLine = lines[0].trim()
+                                .replace(/^\s*-\s*/, '')   // Remove leading dash
+                                .replace(/^\s*•\s*/, '')   // Remove leading bullet
+                                .replace(/^\s*\d+\.\s*/, ''); // Remove leading number
+
+                            if (firstLine.includes(':')) {
+                                // Name: Description format
+                                const parts = firstLine.split(':');
+                                name = parts[0].trim();
+                                content = [parts.slice(1).join(':').trim(), ...lines.slice(1)].join(' ');
+                            } else if (firstLine.length < 50) {
+                                // Short first line is likely a name
+                                name = firstLine;
+                                content = lines.slice(1).join(' ');
+                            } else {
+                                // Extract a name from the beginning
+                                const words = firstLine.split(/\s+/);
+                                name = words.slice(0, Math.min(3, words.length)).join(' ');
+                                content = [words.slice(Math.min(3, words.length)).join(' '), ...lines.slice(1)].join(' ');
+                            }
+                        }
+
+                        // Extract benefits if present
+                        let description = content;
+                        let benefits = '';
+
+                        const sentences = content.split(/\.\s+/);
+                        const descriptionSentences = [];
+                        const benefitSentences = [];
+
+                        for (const sentence of sentences) {
+                            const lowerSentence = sentence.toLowerCase();
+                            if (lowerSentence.includes('benefit') || 
+                                lowerSentence.includes('advantage') || 
+                                lowerSentence.includes('good for') || 
+                                lowerSentence.includes('health')) {
+                                benefitSentences.push(sentence);
+                            } else {
+                                descriptionSentences.push(sentence);
+                            }
+                        }
+
+                        if (benefitSentences.length > 0) {
+                            benefits = benefitSentences.join('. ');
+                            if (!benefits.endsWith('.') && benefits.length > 0) benefits += '.';
+
+                            description = descriptionSentences.join('. ');
+                            if (!description.endsWith('.') && description.length > 0) description += '.';
+                        }
+
+                        // Add to alternatives if we have a name
+                        if (name) {
+                            alternatives.push({
+                                name: toTitleCase(name),
+                                description: description.trim(),
+                                benefits: benefits.trim()
+                            });
+                        }
+                    }
+                }
+            }
+
+            // If we still couldn't find alternatives, look for comma-separated list
             if (alternatives.length === 0) {
-                return [{
+                const potentialListMatch = text.match(/(?:alternatives|substitutes|options)[^:]*?(?:include|are|such as):\s*([^\n]+)/i);
+
+                if (potentialListMatch) {
+                    const itemsList = potentialListMatch[1].split(/,\s*|\s+and\s+|\s+or\s+/).filter(item => item.trim().length > 0);
+
+                    for (const item of itemsList) {
+                        alternatives.push({
+                            name: toTitleCase(item.trim()),
+                            description: `A suitable alternative to the original ingredient.`,
+                            benefits: ''
+                        });
+                    }
+                }
+            }
+
+            // Final cleanup and validation
+            for (let i = 0; i < alternatives.length; i++) {
+                // If name contains description text, shorten it
+                if (alternatives[i].name.length > 50) {
+                    const words = alternatives[i].name.split(/\s+/);
+                    alternatives[i].name = words.slice(0, 4).join(' ');
+                }
+
+                // If name is too short or generic, improve it
+                if (alternatives[i].name.length < 3 || /^(option|alternative|substitute|item)/i.test(alternatives[i].name)) {
+                    alternatives[i].name = `Alternative ${i+1}`;
+                }
+
+                // Make sure name is properly formatted
+                alternatives[i].name = toTitleCase(alternatives[i].name);
+
+                // Ensure description doesn't start with the name
+                if (alternatives[i].description.toLowerCase().startsWith(alternatives[i].name.toLowerCase())) {
+                    alternatives[i].description = alternatives[i].description.substring(alternatives[i].name.length).replace(/^[:\s,-]+/, '').trim();
+                }
+            }
+
+            // If we still have no alternatives, create a generic one
+            if (alternatives.length === 0) {
+                alternatives.push({
                     name: 'Alternative Options',
-                    description: text
-                }];
+                    description: text,
+                    benefits: ''
+                });
             }
 
             return alternatives;
         }
 
+        // Helper function to convert text to Title Case
+        function toTitleCase(text) {
+            return text.replace(/\w\S*/g, function(txt) {
+                // Don't capitalize small words like 'and', 'or', 'the', etc.
+                const smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
+
+                // Don't lowercase first or last word
+                return txt.charAt(0).toUpperCase() + 
+                       txt.substr(1).toLowerCase();
+            });
+        }
+
         // Improved helper function to parse LLM text responses into structured nutrition data
         function parseTextIntoNutrition(text, ingredientName) {
+            // First clean up the entire text - remove markdown and normalize
+            text = text
+                .replace(/\*\*/g, '')      // Remove bold markdown
+                .replace(/\*/g, '')        // Remove asterisks/italic markdown
+                .replace(/^##+\s*/gm, '')  // Remove heading markers
+                .trim();
+            
             const result = {
                 nutrition: [],
                 benefits: [],
@@ -630,8 +807,16 @@
                 if (!line) continue;
 
                 // Check for section headers
-                if (line.startsWith('## ')) {
-                    currentSection = line.substring(3).toLowerCase().trim();
+                if (line.startsWith('## ') || line.match(/^nutritional values|^nutrition facts|^nutrient content/i)) {
+                    currentSection = 'nutrition';
+                    sections[currentSection] = [];
+                    continue;
+                } else if (line.match(/^health benefits|^benefits|^advantages/i)) {
+                    currentSection = 'benefits';
+                    sections[currentSection] = [];
+                    continue;
+                } else if (line.match(/^key information|^information|^description|^summary/i)) {
+                    currentSection = 'info';
                     sections[currentSection] = [];
                     continue;
                 }
@@ -644,91 +829,18 @@
             }
 
             // Process nutritional values section
-            const nutritionalSectionNames = ['nutritional values', 'nutrition facts', 'nutrient content', 'nutritional information'];
+            const nutritionalSectionNames = ['nutrition', 'nutritional values', 'nutrition facts', 'nutrient content', 'nutritional information'];
 
             for (const sectionName of nutritionalSectionNames) {
                 if (sections[sectionName]) {
                     for (const line of sections[sectionName]) {
+                        // Clean the line first
+                        const cleanLine = line
+                            .replace(/^\s*-\s*|\s*•\s*|\s*\*\s*|\s*\d+\.\s*/g, '')
+                            .trim();
+                        
                         // Look for list items with values
-                        if (line.startsWith('- ')) {
-                            const nutriMatch = line.substring(2).match(/([^:]+):(.+)/);
-                            if (nutriMatch) {
-                                const nutriName = nutriMatch[1].trim();
-                                const value = nutriMatch[2].trim();
-
-                                // Try to separate value and unit
-                                const valueUnit = value.match(/^([\d.]+)\s*([a-zA-Z%]+)/);
-                                if (valueUnit) {
-                                    result.nutrition.push({
-                                        name: nutriName,
-                                        value: valueUnit[1],
-                                        unit: valueUnit[2]
-                                    });
-                                } else {
-                                    result.nutrition.push({
-                                        name: nutriName,
-                                        value: value,
-                                        unit: ''
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process health benefits section
-            const benefitSectionNames = ['health benefits', 'benefits', 'advantages'];
-
-            for (const sectionName of benefitSectionNames) {
-                if (sections[sectionName]) {
-                    for (const line of sections[sectionName]) {
-                        // Look for list items
-                        if (line.startsWith('- ')) {
-                            result.benefits.push(line.substring(2).trim());
-                        }
-                    }
-                }
-            }
-
-            // Process key information section
-            const infoSectionNames = ['key information', 'information', 'description', 'summary'];
-
-            for (const sectionName of infoSectionNames) {
-                if (sections[sectionName]) {
-                    result.description = sections[sectionName].join(' ');
-                    break;
-                }
-            }
-
-            // If sections weren't found, fall back to the original algorithm
-            if (result.nutrition.length === 0) {
-                let section = 'intro';
-
-                for (let line of lines) {
-                    line = line.trim();
-                    if (!line) continue;
-
-                    // Determine which section we're in
-                    if ((line.toLowerCase().includes('nutrition') && line.toLowerCase().includes('fact')) ||
-                        line.toLowerCase().includes('nutritional value') ||
-                        line.toLowerCase().includes('nutrient')) {
-                        section = 'nutrition';
-                        continue;
-                    } else if (line.toLowerCase().includes('benefit') ||
-                        line.toLowerCase().includes('health')) {
-                        section = 'benefits';
-                        continue;
-                    } else if (line.toLowerCase().includes('key information') ||
-                        line.toLowerCase().includes('summary')) {
-                        section = 'info';
-                        continue;
-                    }
-
-                    // Process based on which section we're in
-                    if (section === 'nutrition') {
-                        // Look for patterns like "Calories: 105 kcal" or "Protein - 2.3g"
-                        const nutriMatch = line.match(/^(?:\d+\.\s*|\*\s*|•\s*|-\s*|)\s*([^:]+)[:\-]\s*(.+)/);
+                        const nutriMatch = cleanLine.match(/([^:]+):(.+)/) || cleanLine.match(/([^-]+)-(.+)/);
                         if (nutriMatch) {
                             const nutriName = nutriMatch[1].trim();
                             const value = nutriMatch[2].trim();
@@ -749,69 +861,92 @@
                                 });
                             }
                         }
-                    } else if (section === 'benefits') {
-                        // Extract benefit points
-                        if (line.match(/^\d+\.\s*|\*\s*|•\s*|-\s*/)) {
-                            result.benefits.push(line.replace(/^\d+\.\s*|\*\s*|•\s*|-\s*/, ''));
-                        } else if (result.benefits.length > 0) {
-                            // Continue previous benefit point
-                            result.benefits[result.benefits.length - 1] += ' ' + line;
-                        } else {
-                            // First benefit doesn't have a bullet
-                            result.benefits.push(line);
-                        }
-                    } else if (section === 'info') {
-                        result.description += (result.description ? ' ' : '') + line;
-                    } else {
-                        // Intro/general description
-                        result.description += (result.description ? ' ' : '') + line;
                     }
                 }
             }
 
-            // Extract additional nutrition information if missing
-            if (result.nutrition.length === 0) {
-                // Extract any numbers that look like nutritional values
-                const calories = text.match(/(\d+)\s*(?:kcal|calories|cal)/i);
-                if (calories) {
-                    result.nutrition.push({
-                        name: 'Calories',
-                        value: calories[1],
-                        unit: 'kcal'
-                    });
-                }
+            // Process health benefits section
+            const benefitSectionNames = ['benefits', 'health benefits', 'advantages'];
 
-                const protein = text.match(/protein[^.]*?(\d+(?:\.\d+)?)\s*g/i);
-                if (protein) {
-                    result.nutrition.push({
-                        name: 'Protein',
-                        value: protein[1],
-                        unit: 'g'
-                    });
-                }
-
-                const carbs = text.match(/carb[^.]*?(\d+(?:\.\d+)?)\s*g/i);
-                if (carbs) {
-                    result.nutrition.push({
-                        name: 'Carbohydrates',
-                        value: carbs[1],
-                        unit: 'g'
-                    });
+            for (const sectionName of benefitSectionNames) {
+                if (sections[sectionName]) {
+                    for (const line of sections[sectionName]) {
+                        // Clean up any benefit line completely
+                        const cleanBenefit = line
+                            .replace(/^\s*-\s*|\s*•\s*|\s*\*\s*|\s*\d+\.\s*/g, '') // Remove bullets/numbers/asterisks
+                            .replace(/\s{2,}/g, ' ') // Normalize spaces
+                            .trim();
+                        
+                        if (cleanBenefit) {
+                            // Make sure benefit ends with proper punctuation
+                            let formattedBenefit = cleanBenefit;
+                            if (!formattedBenefit.endsWith('.') && !formattedBenefit.endsWith('!') && !formattedBenefit.endsWith('?')) {
+                                formattedBenefit += '.';
+                            }
+                            
+                            // Capitalize first letter if not already capitalized
+                            formattedBenefit = formattedBenefit.charAt(0).toUpperCase() + formattedBenefit.slice(1);
+                            
+                            result.benefits.push(formattedBenefit);
+                        }
+                    }
                 }
             }
 
-            // If no benefits were identified
+            // Process key information section
+            const infoSectionNames = ['info', 'key information', 'information', 'description', 'summary', 'intro'];
+
+            // Look for description in any of the info sections
+            for (const sectionName of infoSectionNames) {
+                if (sections[sectionName] && sections[sectionName].length > 0) {
+                    // Join all lines, clean up, and use as description
+                    result.description = sections[sectionName]
+                        .join(' ')
+                        .replace(/\s+/g, ' ') // Normalize whitespace
+                        .trim();
+                    
+                    // Once we find a description, no need to check other sections
+                    if (result.description) break;
+                }
+            }
+
+            // If no benefits were identified and we have description
             if (result.benefits.length === 0 && result.description) {
                 // Try to identify sentences about benefits
                 const sentences = result.description.split(/\.\s+/);
                 for (let sentence of sentences) {
+                    sentence = sentence.trim();
                     if (sentence.toLowerCase().includes('benefit') ||
                         sentence.toLowerCase().includes('good for') ||
-                        sentence.toLowerCase().includes('health')) {
-                        result.benefits.push(sentence + '.');
+                        sentence.toLowerCase().includes('health') ||
+                        sentence.toLowerCase().includes('improve') ||
+                        sentence.toLowerCase().includes('boost')) {
+                        
+                        // Clean and format
+                        let cleanSentence = sentence
+                            .replace(/\*/g, '')
+                            .replace(/\s{2,}/g, ' ')
+                            .trim();
+                        
+                        // Add proper ending punctuation if missing
+                        if (!cleanSentence.endsWith('.') && !cleanSentence.endsWith('!') && !cleanSentence.endsWith('?')) {
+                            cleanSentence += '.';
+                        }
+                        
+                        // Capitalize first letter
+                        cleanSentence = cleanSentence.charAt(0).toUpperCase() + cleanSentence.slice(1);
+                        
+                        result.benefits.push(cleanSentence);
                     }
                 }
             }
+
+            // Format nutrition items - capitalize first letter of each nutrient name
+            result.nutrition = result.nutrition.map(item => ({
+                name: item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase(),
+                value: item.value,
+                unit: item.unit
+            }));
 
             return result;
         }
