@@ -264,8 +264,14 @@ body.has-topbar .main-content {
 }
 
 .btn-success {
-    background-color: #769e60; /* Green */
-    border-color: #587d44;
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #266a2a;
+    border-color: #266a2a;
 }
 
 .btn-danger {
@@ -274,8 +280,14 @@ body.has-topbar .main-content {
 }
 
 .btn-primary {
-    background-color: #2196f3; /* Blue */
-    border-color: #2196f3;
+    background-color: #386641;
+    border-color: #386641;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #305939;
+    border-color: #305939;
 }
 
 .btn-secondary {
@@ -301,7 +313,47 @@ body.has-topbar .main-content {
     background-color: #f6f6f6; /* Light grey */   
 }
 
-
-#edit-btn {
-    background-color: #c47a6d; /* Red */
+.form-control:focus {
+    border-color: #4a7a50;
+    box-shadow: 0 0 0 0.25rem rgba(74, 122, 80, 0.25);
 }
+
+body {
+    background-color: #f5ece5;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.bg-success {
+    background-color: #2e7d32 !important;
+}
+
+.text-success {
+    color: #2e7d32 !important;
+}
+
+.btn-outline-success {
+    color: #2e7d32;
+    border-color: #2e7d32;
+}
+
+.btn-outline-success:hover {
+    background-color: #2e7d32;
+    border-color: #2e7d32;
+    color: white;
+}
+
+/* Updated styling for edit button */
+#edit-btn {
+    background-color: #c47a6d; /* Dark green from your theme */
+    border-color: #c47a6d;
+    color: white;
+}
+
+#edit-btn:hover {
+    background-color: #305939;
+    border-color: #305939;
+}
+
